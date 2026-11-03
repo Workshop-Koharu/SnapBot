@@ -1,0 +1,81 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String?
+  nickname      String
+  avatarUrl     String?
+  provider      String    @default("local") // 'local' | 'google'
+  providerId    String?
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions      Session[]
+  projects      BotProject[]
+  verifications EmailVerification[]
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  email     String
+  userId    String?
+  code      String   // 6자리 난수
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email, code])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BotProject {
+  id           String   @id @default(cuid())
+  ownerId      String
+  name         String
+  description  String?
+  workspaceJson Json
+  compiledCode String   @db.Text
+  isPublic     Boolean  @default(false)
+  starsCount   Int      @default(0)
+  remixCount   Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  owner        User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([isPublic])
+}
+
+model ProjectTemplate {
+  id           String   @id @default(cuid())
+  title        String
+  description  String
+  category     String   // 'moderation' | 'utility' | 'fun' | 'welcome'
+  workspaceJson Json
+  compiledCode String   @db.Text
+  previewImage String?
+  author       String   @default("SnapBot Official")
+  isOfficial   Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
