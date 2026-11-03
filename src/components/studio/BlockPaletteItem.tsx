@@ -108,3 +108,4 @@ export const BlockPaletteItem: React.FC<BlockPaletteItemProps> = ({ def, onAdd }
     </div>
   );
 };
+

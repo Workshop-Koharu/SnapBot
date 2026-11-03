@@ -139,3 +139,4 @@ fs.writeFileSync(path.join(publicDir, 'favicon.ico'), ico);
 fs.writeFileSync(path.join(appDir, 'favicon.ico'), ico);
 
 console.log('Successfully generated logo.png, icon.png, and favicon.ico!');
+

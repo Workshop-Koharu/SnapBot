@@ -1,22 +1,23 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { I18nProvider } from '@/lib/i18n/context';
+import { CookieConsentBanner } from '@/components/common/CookieConsentBanner';
 
 export const metadata: Metadata = {
-  title: 'SnapBot (스냅봇) - 엔트리·스크래치 방식의 비주얼 디스코드 봇 IDE & 라이브러리',
+  title: 'SnapBot - Visual Block-Coding IDE & Library for Discord Bots',
   description:
-    '외부 블록 에디터 라이브러리 없이 순수 TypeScript로 밑바닥부터 개발된 스크래치·엔트리 스타일의 오픈소스 디스코드 봇 비주얼 코딩 플랫폼.',
+    'Build powerful Discord bots visually with zero-drag latency, Scratch/Entry-style snapping blocks, and real-time discord.js v14 compilation.',
   keywords: [
     'SnapBot',
-    '스냅봇',
-    '디스코드 봇',
-    '블록코딩',
-    '엔트리',
-    '스크래치',
+    'Discord Bot',
+    'Block Coding',
+    'Visual IDE',
     'discord.js',
     'TypeScript',
-    '오픈소스',
+    'Scratch',
+    'Entry',
   ],
-  authors: [{ name: 'Workshop-Koharu', url: 'https://github.com/Workshop-Koharu' }],
+  authors: [{ name: 'Workshop-Koharu', url: 'https://koharu.live' }],
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
@@ -24,18 +25,18 @@ export const metadata: Metadata = {
   },
   metadataBase: new URL('https://snapbot.koharu.live'),
   openGraph: {
-    title: 'SnapBot (스냅봇) - 비주얼 블록 코딩 디스코드 봇 플랫폼',
+    title: 'SnapBot - Visual Block-Coding Discord Bot Platform',
     description:
-      '블록을 조립하면 바로 완성되는 디스코드 봇! 순수 TypeScript 자석 스냅 엔진 & discord.js v14 실시간 컴파일러.',
+      'Assemble blocks to build full-featured Discord bots instantly! Pure TypeScript magnetic snapping engine & live simulator.',
     url: 'https://snapbot.koharu.live',
     siteName: 'SnapBot',
-    locale: 'ko_KR',
+    locale: 'en_US',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'SnapBot (스냅봇)',
-    description: '스크래치·엔트리 스타일의 오픈소스 디스코드 봇 비주얼 코딩 플랫폼',
+    title: 'SnapBot',
+    description: 'Visual block-coding Discord bot builder with real-time compilation',
   },
 };
 
@@ -45,13 +46,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="dark">
+    <html lang="en" className="dark">
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="apple-touch-icon" href="/icon.png" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       </head>
       <body className="min-h-screen bg-[#090D16] text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
-        {children}
+        <I18nProvider>
+          {children}
+          <CookieConsentBanner />
+        </I18nProvider>
       </body>
     </html>
   );

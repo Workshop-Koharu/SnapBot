@@ -3,13 +3,14 @@
 // ==============================================================================
 // SnapBot Block Palette & Category Drawer
 // Scratch & Entry style visual block picker
-// (c) 2026 Workshop-Koharu (MIT License)
+// (c) 2026 Workshop-Koharu
 // ==============================================================================
 
 import React, { useState } from 'react';
 import { BlockCategory, CATEGORY_DEFINITIONS } from '@/lib/snapbot/core/types';
 import { STANDARD_BLOCKS } from '@/lib/snapbot/blocks/definitions';
 import { BlockPaletteItem } from './BlockPaletteItem';
+import { useI18n } from '@/lib/i18n/context';
 import {
   Zap,
   MessageSquare,
@@ -25,6 +26,7 @@ import {
 
 interface PaletteProps {
   onAddBlock: (opcode: string) => void;
+  className?: string;
 }
 
 const CATEGORY_ICONS: Record<string, React.FC<{ className?: string }>> = {
@@ -39,7 +41,8 @@ const CATEGORY_ICONS: Record<string, React.FC<{ className?: string }>> = {
   Database,
 };
 
-export const Palette: React.FC<PaletteProps> = ({ onAddBlock }) => {
+export const Palette: React.FC<PaletteProps> = ({ onAddBlock, className = '' }) => {
+  const { t } = useI18n();
   const [activeCategory, setActiveCategory] = useState<BlockCategory>('events');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -56,14 +59,14 @@ export const Palette: React.FC<PaletteProps> = ({ onAddBlock }) => {
   });
 
   return (
-    <aside className="w-[300px] h-full flex flex-col bg-slate-900 border-r border-slate-800 shrink-0 select-none">
+    <aside className={`w-full md:w-[300px] h-full flex flex-col bg-slate-900 border-r border-slate-800 shrink-0 select-none ${className}`}>
       {/* Search Header */}
       <div className="p-3 border-b border-slate-800 bg-slate-900/60">
         <div className="relative mb-2.5">
           <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
           <input
             type="text"
-            placeholder="블록 검색 (메시지, 반복, 임베드)..."
+            placeholder={t.studio.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-slate-950 text-slate-200 text-xs rounded-lg pl-8 pr-3 py-1.5 border border-slate-700/60 focus:border-indigo-500 focus:outline-none transition-colors"
@@ -102,13 +105,13 @@ export const Palette: React.FC<PaletteProps> = ({ onAddBlock }) => {
       {/* Visual Blocks List */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1 custom-scrollbar bg-slate-950/40">
         <div className="text-[11px] font-semibold text-slate-400 mb-2 flex items-center justify-between">
-          <span>{searchQuery ? `검색 결과 (${filteredBlocks.length})` : CATEGORY_DEFINITIONS[activeCategory].name}</span>
-          <span className="text-[10px] text-slate-500">클릭하거나 드래그</span>
+          <span>{searchQuery ? `(${filteredBlocks.length})` : CATEGORY_DEFINITIONS[activeCategory].name}</span>
+          <span className="text-[10px] text-slate-500">Tap or drag</span>
         </div>
 
         {filteredBlocks.length === 0 ? (
           <div className="text-center py-12 text-slate-500 text-xs">
-            일치하는 블록이 없습니다.
+            No matching blocks found.
           </div>
         ) : (
           filteredBlocks.map((def) => (

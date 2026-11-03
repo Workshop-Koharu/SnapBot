@@ -37,6 +37,10 @@ export const Canvas: React.FC<CanvasProps> = ({
   const [isPanning, setIsPanning] = useState(false);
   const panStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
+  // Mobile Pinch-to-zoom & Touch references
+  const initialPinchDistRef = useRef<number | null>(null);
+  const initialZoomRef = useRef<number>(1);
+
   // Dragging blocks
   const [draggingBlockId, setDraggingBlockId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -191,6 +195,133 @@ export const Canvas: React.FC<CanvasProps> = ({
     }
   }, [isPanning, draggingBlockId, isOverTrash, snapCandidate, manager, onSelectBlock, onWorkspaceChange]);
 
+  // Mobile Block Touch Start
+  const handleBlockTouchStart = (e: React.TouchEvent, blockId: string) => {
+    e.stopPropagation();
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    const block = manager.getBlock(blockId);
+    if (!block) return;
+
+    onSelectBlock(blockId);
+    setDraggingBlockId(blockId);
+    setContextMenu((prev) => ({ ...prev, isOpen: false }));
+
+    manager.disconnectBlock(blockId);
+    onWorkspaceChange();
+
+    const canvasBounds = containerRef.current?.getBoundingClientRect();
+    if (canvasBounds) {
+      const touchCanvasX = (touch.clientX - canvasBounds.left - pan.x) / zoom;
+      const touchCanvasY = (touch.clientY - canvasBounds.top - pan.y) / zoom;
+      setDragOffset({
+        x: touchCanvasX - block.x,
+        y: touchCanvasY - block.y,
+      });
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      // Pinch to zoom initialization
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+      initialPinchDistRef.current = dist;
+      initialZoomRef.current = zoom;
+      setIsPanning(false);
+      setDraggingBlockId(null);
+      return;
+    }
+
+    if (e.touches.length === 1 && !draggingBlockId) {
+      const touch = e.touches[0];
+      setIsPanning(true);
+      panStartRef.current = { x: touch.clientX - pan.x, y: touch.clientY - pan.y };
+      onSelectBlock(null);
+      setContextMenu((prev) => ({ ...prev, isOpen: false }));
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    // 1. Pinch to zoom
+    if (e.touches.length === 2 && initialPinchDistRef.current) {
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const currentDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+      const scale = currentDist / initialPinchDistRef.current;
+      const targetZoom = Math.min(Math.max(initialZoomRef.current * scale, 0.4), 2.0);
+      setZoom(targetZoom);
+      return;
+    }
+
+    // 2. Single finger drag/pan
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+
+      if (isPanning) {
+        setPan({
+          x: touch.clientX - panStartRef.current.x,
+          y: touch.clientY - panStartRef.current.y,
+        });
+        return;
+      }
+
+      if (draggingBlockId) {
+        const canvasBounds = containerRef.current?.getBoundingClientRect();
+        if (!canvasBounds) return;
+
+        const touchCanvasX = (touch.clientX - canvasBounds.left - pan.x) / zoom;
+        const touchCanvasY = (touch.clientY - canvasBounds.top - pan.y) / zoom;
+
+        const newX = Math.round(touchCanvasX - dragOffset.x);
+        const newY = Math.round(touchCanvasY - dragOffset.y);
+
+        const currentBlock = manager.getBlock(draggingBlockId);
+        if (currentBlock) {
+          const dx = newX - currentBlock.x;
+          const dy = newY - currentBlock.y;
+          manager.moveBlock(draggingBlockId, dx, dy);
+
+          const candidate = findBestSnapCandidate(currentBlock, manager.getBlocks());
+          setSnapCandidate(candidate);
+
+          if (trashRef.current) {
+            const rect = trashRef.current.getBoundingClientRect();
+            const isHit =
+              touch.clientX >= rect.left - 20 &&
+              touch.clientX <= rect.right + 20 &&
+              touch.clientY >= rect.top - 20 &&
+              touch.clientY <= rect.bottom + 20;
+            setIsOverTrash(isHit);
+          }
+
+          onWorkspaceChange();
+        }
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    initialPinchDistRef.current = null;
+    if (isPanning) {
+      setIsPanning(false);
+    }
+    if (draggingBlockId) {
+      if (isOverTrash) {
+        manager.removeBlock(draggingBlockId);
+        onSelectBlock(null);
+      } else if (snapCandidate) {
+        manager.connectBlock(draggingBlockId, snapCandidate);
+      }
+
+      setDraggingBlockId(null);
+      setSnapCandidate(null);
+      setIsOverTrash(false);
+      onWorkspaceChange();
+    }
+  };
+
   // Context Menu triggers
   const handleCanvasContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -246,10 +377,15 @@ export const Canvas: React.FC<CanvasProps> = ({
       onMouseDown={handleCanvasMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
       onContextMenu={handleCanvasContextMenu}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      className="relative w-full h-full overflow-hidden bg-[#0B0F19] select-none cursor-default"
+      style={{ touchAction: 'none' }}
+      className="relative w-full h-full overflow-hidden bg-[#0B0F19] select-none cursor-default touch-none"
     >
       {/* SVG Canvas Area */}
       <svg className="w-full h-full block">
@@ -292,6 +428,7 @@ export const Canvas: React.FC<CanvasProps> = ({
               block={block}
               isSelected={selectedBlockId === block.id}
               onMouseDown={handleBlockMouseDown}
+              onTouchStart={handleBlockTouchStart}
               onContextMenu={handleBlockContextMenu}
               onFieldChange={(id, field, val) => {
                 manager.updateBlockField(id, field, val);

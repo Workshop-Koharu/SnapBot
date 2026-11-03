@@ -21,6 +21,7 @@ interface BlockViewProps {
   block: BlockInstance;
   isSelected?: boolean;
   onMouseDown: (e: React.MouseEvent, blockId: string) => void;
+  onTouchStart?: (e: React.TouchEvent, blockId: string) => void;
   onContextMenu?: (e: React.MouseEvent, blockId: string) => void;
   onFieldChange?: (blockId: string, fieldName: string, value: string | number | boolean) => void;
   onDelete?: (blockId: string) => void;
@@ -30,6 +31,7 @@ export const BlockView: React.FC<BlockViewProps> = ({
   block,
   isSelected,
   onMouseDown,
+  onTouchStart,
   onContextMenu,
   onFieldChange,
 }) => {
@@ -118,6 +120,9 @@ export const BlockView: React.FC<BlockViewProps> = ({
     <g
       transform={`translate(${block.x}, ${block.y})`}
       onMouseDown={(e) => onMouseDown(e, block.id)}
+      onTouchStart={(e) => {
+        if (onTouchStart) onTouchStart(e, block.id);
+      }}
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();

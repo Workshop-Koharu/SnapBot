@@ -7,6 +7,7 @@
 // ==============================================================================
 
 import Link from 'next/link';
+import { LanguageSelector } from '@/lib/i18n/context';
 import {
   Bot,
   BookOpen,
@@ -32,18 +33,10 @@ export default function DocsPage() {
           <span className="font-extrabold text-base text-white">SnapBot 공식 문서</span>
         </Link>
 
-        <div className="flex items-center gap-4 text-xs font-medium text-slate-300">
+        <div className="flex items-center gap-3 text-xs font-medium text-slate-300">
+          <LanguageSelector />
           <Link href="/studio" className="hover:text-white">블록 스튜디오</Link>
           <Link href="/dashboard" className="hover:text-white">내 프로젝트</Link>
-          <a
-            href="https://github.com/Workshop-Koharu/SnapBot"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 hover:text-white"
-          >
-            <span>GitHub</span>
-            <ExternalLink className="w-3 h-3" />
-          </a>
         </div>
       </header>
 
@@ -88,10 +81,10 @@ export default function DocsPage() {
         <main className="lg:col-span-3 space-y-10">
           <div>
             <h1 className="text-3xl font-extrabold text-white mb-4">
-              SnapBot (스냅봇) 공식 개발자 문서
+              SnapBot 개발자 문서
             </h1>
             <p className="text-sm text-slate-300 leading-relaxed">
-              SnapBot은 교육용 비주얼 프로그래밍 언어인 스크래치(Scratch)와 엔트리(Entry)의 직관적인 블록 조립 감각을 그대로 디스코드 봇 제작에 접목한 100% 오픈소스 플랫폼이자 TypeScript 라이브러리입니다.
+              SnapBot은 스크래치(Scratch)와 엔트리(Entry)의 직관적인 블록 조립 방식을 디스코드 봇 제작에 접목한 비주얼 플랫폼이자 모듈형 TypeScript 라이브러리입니다.
             </p>
           </div>
 
