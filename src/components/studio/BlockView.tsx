@@ -2,6 +2,7 @@
 
 // ==============================================================================
 // SnapBot Visual Block Component (SVG Rendered)
+// Scratch & Entry style visual block on canvas with clean input bubbles
 // (c) 2026 Workshop-Koharu (MIT License)
 // ==============================================================================
 
@@ -15,12 +16,12 @@ import {
   generateHexagonPath,
   generateReporterPath,
 } from '@/lib/snapbot/ui/svg-paths';
-import { BLOCK_METRICS } from '@/lib/snapbot/core/snapping';
 
 interface BlockViewProps {
   block: BlockInstance;
   isSelected?: boolean;
   onMouseDown: (e: React.MouseEvent, blockId: string) => void;
+  onContextMenu?: (e: React.MouseEvent, blockId: string) => void;
   onFieldChange?: (blockId: string, fieldName: string, value: string | number | boolean) => void;
   onDelete?: (blockId: string) => void;
 }
@@ -29,25 +30,30 @@ export const BlockView: React.FC<BlockViewProps> = ({
   block,
   isSelected,
   onMouseDown,
+  onContextMenu,
   onFieldChange,
 }) => {
   const def = STANDARD_BLOCKS[block.opcode];
   if (!def) return null;
 
-  const width = BLOCK_METRICS.blockWidth;
-  const height = BLOCK_METRICS.blockHeight;
+  // Dynamically calculate block width based on content
+  const labelLength = def.label.length;
+  const fieldCount = def.fields.length;
+  const estimatedContentWidth = Math.max(250, labelLength * 12 + fieldCount * 70);
+  const width = Math.min(estimatedContentWidth, 420);
+  const height = def.shape === 'hat' ? 44 : def.shape === 'c-block' ? 84 : 40;
 
   let pathD = '';
   if (def.shape === 'hat') {
-    pathD = generateHatPath(width, height);
+    pathD = generateHatPath(width, 44);
   } else if (def.shape === 'command') {
-    pathD = generateCommandPath(width, height);
+    pathD = generateCommandPath(width, 40);
   } else if (def.shape === 'c-block') {
-    pathD = generateCBlockPath(width, height, 48, 24);
+    pathD = generateCBlockPath(width, 40, 44, 20);
   } else if (def.shape === 'boolean') {
-    pathD = generateHexagonPath(150, 32);
+    pathD = generateHexagonPath(Math.max(width, 160), 34);
   } else if (def.shape === 'reporter') {
-    pathD = generateReporterPath(140, 32);
+    pathD = generateReporterPath(Math.max(width, 150), 34);
   }
 
   const renderFields = () => {
@@ -61,7 +67,7 @@ export const BlockView: React.FC<BlockViewProps> = ({
             value={String(val)}
             onChange={(e) => onFieldChange && onFieldChange(block.id, field.name, e.target.value)}
             onMouseDown={(e) => e.stopPropagation()}
-            className="text-xs bg-black/40 text-white rounded px-1.5 py-0.5 border border-white/20 outline-none hover:bg-black/60 focus:border-white transition-colors cursor-pointer"
+            className="text-[11px] font-bold bg-white text-slate-800 rounded-full px-2.5 py-0.5 border-none outline-none shadow-sm cursor-pointer hover:bg-slate-100 transition-colors"
           >
             {field.options.map((opt) => (
               <option key={opt.value} value={opt.value} className="bg-slate-900 text-white">
@@ -74,12 +80,16 @@ export const BlockView: React.FC<BlockViewProps> = ({
 
       if (field.type === 'color') {
         return (
-          <div key={field.name} className="flex items-center gap-1" onMouseDown={(e) => e.stopPropagation()}>
+          <div
+            key={field.name}
+            className="flex items-center rounded-full bg-white p-0.5 shadow-sm"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
             <input
               type="color"
               value={String(val || '#6366F1')}
               onChange={(e) => onFieldChange && onFieldChange(block.id, field.name, e.target.value)}
-              className="w-5 h-5 rounded cursor-pointer border border-white/30 bg-transparent"
+              className="w-5 h-5 rounded-full cursor-pointer border-0 bg-transparent"
             />
           </div>
         );
@@ -96,46 +106,53 @@ export const BlockView: React.FC<BlockViewProps> = ({
             onFieldChange(block.id, field.name, field.type === 'number' ? Number(e.target.value) : e.target.value)
           }
           onMouseDown={(e) => e.stopPropagation()}
-          className="text-xs bg-black/40 text-white placeholder-white/50 rounded px-1.5 py-0.5 border border-white/20 outline-none hover:bg-black/60 focus:border-white w-24 text-center transition-colors"
+          className="text-[11px] font-semibold bg-white text-slate-900 placeholder-slate-400 rounded-full px-2.5 py-0.5 border-none outline-none shadow-inner w-24 text-center focus:ring-2 focus:ring-indigo-400 transition-all"
         />
       );
     });
   };
 
+  const cleanLabel = def.label.split('{')[0].trim();
+
   return (
     <g
       transform={`translate(${block.x}, ${block.y})`}
       onMouseDown={(e) => onMouseDown(e, block.id)}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (onContextMenu) onContextMenu(e, block.id);
+      }}
       className="cursor-grab active:cursor-grabbing select-none group"
     >
-      {/* Block Outline & Drop Shadow */}
+      {/* Block Body */}
       <path
         d={pathD}
         fill={def.color}
-        stroke={isSelected ? '#60A5FA' : 'rgba(0,0,0,0.35)'}
-        strokeWidth={isSelected ? 3 : 1.5}
-        filter="drop-shadow(0px 3px 4px rgba(0,0,0,0.25))"
+        stroke={isSelected ? '#FFFFFF' : 'rgba(0,0,0,0.22)'}
+        strokeWidth={isSelected ? 2.5 : 1.2}
+        filter="drop-shadow(0px 2px 4px rgba(0,0,0,0.2))"
         className="transition-[stroke-width,stroke] duration-150"
       />
 
-      {/* Gloss Highlight on top edge */}
+      {/* Top Gloss Highlight */}
       <path
         d={pathD}
         fill="none"
-        stroke="rgba(255,255,255,0.25)"
+        stroke="rgba(255,255,255,0.3)"
         strokeWidth="1.2"
         strokeLinecap="round"
       />
 
-      {/* Block Label & Content Inputs */}
+      {/* Label & Inputs */}
       <foreignObject
-        x={def.shape === 'hat' ? 12 : 8}
-        y={def.shape === 'hat' ? 14 : 6}
-        width={width - 16}
-        height={height - 8}
+        x={def.shape === 'hat' ? 14 : def.shape === 'boolean' ? 14 : 10}
+        y={def.shape === 'hat' ? 13 : def.shape === 'c-block' ? 6 : 4}
+        width={width - 20}
+        height={32}
       >
-        <div className="flex items-center gap-1.5 h-full text-white text-xs font-medium tracking-tight overflow-hidden pointer-events-auto">
-          <span className="truncate drop-shadow-sm select-none">{def.label.split('{')[0]}</span>
+        <div className="flex items-center gap-2 h-full text-white text-xs font-semibold tracking-tight overflow-hidden pointer-events-auto">
+          <span className="truncate drop-shadow-sm select-none">{cleanLabel}</span>
           {renderFields()}
         </div>
       </foreignObject>

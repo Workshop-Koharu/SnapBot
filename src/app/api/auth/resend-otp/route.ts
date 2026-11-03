@@ -41,3 +41,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '인증번호 재전송 중 오류가 발생했습니다.' }, { status: 500 });
   }
 }
+

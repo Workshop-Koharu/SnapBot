@@ -81,3 +81,4 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     return NextResponse.json({ error: '프로젝트 삭제 실패' }, { status: 500 });
   }
 }
+

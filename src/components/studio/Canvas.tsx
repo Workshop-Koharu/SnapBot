@@ -2,7 +2,8 @@
 
 // ==============================================================================
 // SnapBot Visual Block Assembly Canvas
-// Scratch & Entry style infinite workspace with magnetic snapping & minimap
+// Scratch & Entry style infinite workspace with magnetic snapping,
+// interactive trash can, and full right-click context menu
 // (c) 2026 Workshop-Koharu (MIT License)
 // ==============================================================================
 
@@ -11,6 +12,7 @@ import { BlockInstance, SnapCandidate } from '@/lib/snapbot/core/types';
 import { WorkspaceManager } from '@/lib/snapbot/core/workspace';
 import { findBestSnapCandidate } from '@/lib/snapbot/core/snapping';
 import { BlockView } from './BlockView';
+import { ContextMenu, ContextMenuState } from './ContextMenu';
 import { ZoomIn, ZoomOut, RotateCcw, Trash2, Compass } from 'lucide-react';
 
 interface CanvasProps {
@@ -27,10 +29,11 @@ export const Canvas: React.FC<CanvasProps> = ({
   onSelectBlock,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const trashRef = useRef<HTMLDivElement>(null);
 
   // Viewport transforms: pan and zoom
   const [zoom, setZoom] = useState<number>(1);
-  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 40, y: 40 });
+  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
   const [isPanning, setIsPanning] = useState(false);
   const panStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
@@ -40,16 +43,37 @@ export const Canvas: React.FC<CanvasProps> = ({
   const [snapCandidate, setSnapCandidate] = useState<SnapCandidate | null>(null);
   const [isOverTrash, setIsOverTrash] = useState(false);
 
+  // Context Menu State
+  const [contextMenu, setContextMenu] = useState<ContextMenuState>({
+    isOpen: false,
+    x: 0,
+    y: 0,
+    type: 'canvas',
+  });
+
   const blocks = manager.getBlocks();
 
-  // ----------------------------------------------------------------------------
-  // Zoom & Pan Handlers
-  // ----------------------------------------------------------------------------
+  // Keyboard shortcut: Delete or Backspace to delete selected block
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedBlockId) {
+        // Only if not currently typing in an input
+        if (['INPUT', 'SELECT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return;
+        manager.removeBlock(selectedBlockId);
+        onSelectBlock(null);
+        onWorkspaceChange();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedBlockId, manager, onSelectBlock, onWorkspaceChange]);
+
+  // Zoom handlers
   const handleZoomIn = () => setZoom((z) => Math.min(z + 0.15, 2.0));
   const handleZoomOut = () => setZoom((z) => Math.max(z - 0.15, 0.4));
   const handleResetView = () => {
     setZoom(1);
-    setPan({ x: 40, y: 40 });
+    setPan({ x: 50, y: 50 });
   };
 
   const handleWheel = (e: React.WheelEvent) => {
@@ -63,30 +87,28 @@ export const Canvas: React.FC<CanvasProps> = ({
   };
 
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
-    // Left-click on canvas background starts panning
-    if (e.button === 0 && (e.target as HTMLElement).tagName === 'svg') {
+    if (e.button === 0) {
       setIsPanning(true);
       panStartRef.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
       onSelectBlock(null);
+      setContextMenu((prev) => ({ ...prev, isOpen: false }));
     }
   };
 
-  // ----------------------------------------------------------------------------
   // Block Dragging & Magnetic Snapping
-  // ----------------------------------------------------------------------------
   const handleBlockMouseDown = (e: React.MouseEvent, blockId: string) => {
+    if (e.button !== 0) return; // Only left click for dragging
     e.stopPropagation();
     const block = manager.getBlock(blockId);
     if (!block) return;
 
     onSelectBlock(blockId);
     setDraggingBlockId(blockId);
+    setContextMenu((prev) => ({ ...prev, isOpen: false }));
 
-    // Disconnect block from stack if it was attached
     manager.disconnectBlock(blockId);
     onWorkspaceChange();
 
-    // Store pointer offset relative to block
     const canvasBounds = containerRef.current?.getBoundingClientRect();
     if (canvasBounds) {
       const mouseCanvasX = (e.clientX - canvasBounds.left - pan.x) / zoom;
@@ -126,14 +148,20 @@ export const Canvas: React.FC<CanvasProps> = ({
           const dy = newY - currentBlock.y;
           manager.moveBlock(draggingBlockId, dx, dy);
 
-          // Test magnetic snapping
+          // Magnetic snapping candidate
           const candidate = findBestSnapCandidate(currentBlock, manager.getBlocks());
           setSnapCandidate(candidate);
 
-          // Check if hovering over trash can zone (bottom right corner)
-          const isTrash =
-            e.clientX > window.innerWidth - 180 && e.clientY > window.innerHeight - 180;
-          setIsOverTrash(isTrash);
+          // Accurate Trash Can Hit Testing via getBoundingClientRect!
+          if (trashRef.current) {
+            const rect = trashRef.current.getBoundingClientRect();
+            const isHit =
+              e.clientX >= rect.left - 20 &&
+              e.clientX <= rect.right + 20 &&
+              e.clientY >= rect.top - 20 &&
+              e.clientY <= rect.bottom + 20;
+            setIsOverTrash(isHit);
+          }
 
           onWorkspaceChange();
         }
@@ -148,12 +176,11 @@ export const Canvas: React.FC<CanvasProps> = ({
     }
 
     if (draggingBlockId) {
-      // If dropped over trash can, delete block
+      // If released over trash can, delete block!
       if (isOverTrash) {
         manager.removeBlock(draggingBlockId);
         onSelectBlock(null);
       } else if (snapCandidate) {
-        // Snap magnetically into target block
         manager.connectBlock(draggingBlockId, snapCandidate);
       }
 
@@ -164,7 +191,31 @@ export const Canvas: React.FC<CanvasProps> = ({
     }
   }, [isPanning, draggingBlockId, isOverTrash, snapCandidate, manager, onSelectBlock, onWorkspaceChange]);
 
-  // Handle Drag & Drop from left palette
+  // Context Menu triggers
+  const handleCanvasContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenu({
+      isOpen: true,
+      x: e.clientX,
+      y: e.clientY,
+      type: 'canvas',
+    });
+  };
+
+  const handleBlockContextMenu = (e: React.MouseEvent, blockId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onSelectBlock(blockId);
+    setContextMenu({
+      isOpen: true,
+      x: e.clientX,
+      y: e.clientY,
+      type: 'block',
+      targetBlockId: blockId,
+    });
+  };
+
+  // Drag and drop from palette
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
@@ -195,42 +246,41 @@ export const Canvas: React.FC<CanvasProps> = ({
       onMouseDown={handleCanvasMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
+      onContextMenu={handleCanvasContextMenu}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      className="relative w-full h-full overflow-hidden bg-[#0F172A] select-none cursor-crosshair"
+      className="relative w-full h-full overflow-hidden bg-[#0B0F19] select-none cursor-default"
     >
       {/* SVG Canvas Area */}
       <svg className="w-full h-full block">
         <defs>
-          {/* Infinite Dot Grid Pattern */}
           <pattern id="snap-grid" width="24" height="24" patternUnits="userSpaceOnUse">
-            <circle cx="2" cy="2" r="1.2" fill="#334155" opacity="0.6" />
+            <circle cx="2" cy="2" r="1" fill="#1E293B" opacity="0.8" />
           </pattern>
         </defs>
 
-        {/* Background Grid */}
         <rect width="100%" height="100%" fill="url(#snap-grid)" />
 
         {/* Transformed Workspace Layer */}
         <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
-          {/* Magnetic Snapping Halo & Guide Indicator */}
+          {/* Magnetic Snapping Halo & Indicator */}
           {snapCandidate && (
             <g>
               <circle
                 cx={snapCandidate.point.x}
                 cy={snapCandidate.point.y}
-                r="14"
-                fill="none"
-                stroke="#38BDF8"
-                strokeWidth="3"
-                className="animate-ping opacity-75"
+                r="10"
+                fill="#38BDF8"
+                opacity="0.9"
               />
               <circle
                 cx={snapCandidate.point.x}
                 cy={snapCandidate.point.y}
-                r="8"
-                fill="#38BDF8"
-                opacity="0.9"
+                r="16"
+                fill="none"
+                stroke="#38BDF8"
+                strokeWidth="2"
+                opacity="0.6"
               />
             </g>
           )}
@@ -242,6 +292,7 @@ export const Canvas: React.FC<CanvasProps> = ({
               block={block}
               isSelected={selectedBlockId === block.id}
               onMouseDown={handleBlockMouseDown}
+              onContextMenu={handleBlockContextMenu}
               onFieldChange={(id, field, val) => {
                 manager.updateBlockField(id, field, val);
                 onWorkspaceChange();
@@ -251,8 +302,8 @@ export const Canvas: React.FC<CanvasProps> = ({
         </g>
       </svg>
 
-      {/* Floating Canvas Controls (Zoom, Pan, Reset) */}
-      <div className="absolute bottom-6 left-6 flex items-center gap-1.5 bg-slate-900/90 backdrop-blur border border-slate-700/80 rounded-xl p-1.5 shadow-xl text-slate-300">
+      {/* Floating Canvas Controls */}
+      <div className="absolute bottom-6 left-6 flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-xl p-1 shadow-lg text-slate-300">
         <button
           onClick={handleZoomIn}
           title="확대 (Zoom In)"
@@ -274,26 +325,80 @@ export const Canvas: React.FC<CanvasProps> = ({
         >
           <RotateCcw className="w-4 h-4" />
         </button>
-        <div className="px-2 text-xs font-mono text-slate-400 border-l border-slate-700">
+        <div className="px-2.5 text-xs font-mono text-slate-400 border-l border-slate-800">
           {Math.round(zoom * 100)}%
         </div>
       </div>
 
-      {/* Trash Can Drop Target */}
+      {/* Interactive Trash Can Drop Target */}
       <div
-        className={`absolute bottom-6 right-6 flex items-center gap-2 px-4 py-3 rounded-2xl border transition-all duration-200 shadow-2xl ${
+        ref={trashRef}
+        onClick={() => {
+          if (selectedBlockId) {
+            manager.removeBlock(selectedBlockId);
+            onSelectBlock(null);
+            onWorkspaceChange();
+          }
+        }}
+        className={`absolute bottom-6 right-6 flex items-center gap-2 px-4 py-3 rounded-2xl border transition-all duration-150 select-none cursor-pointer ${
           isOverTrash
-            ? 'bg-red-600 border-red-400 text-white scale-110 shadow-red-500/50'
+            ? 'bg-rose-600 border-rose-400 text-white scale-110 shadow-lg shadow-rose-600/30'
             : draggingBlockId
-            ? 'bg-slate-900/95 border-red-500/50 text-red-400 animate-pulse'
-            : 'bg-slate-900/60 border-slate-800 text-slate-500'
+            ? 'bg-slate-900 border-rose-500 text-rose-400'
+            : selectedBlockId
+            ? 'bg-slate-900 border-slate-700 text-slate-300 hover:border-rose-500 hover:text-rose-400'
+            : 'bg-slate-900/80 border-slate-800 text-slate-500'
         }`}
+        title={selectedBlockId ? '클릭하여 선택된 블록 삭제' : '블록을 드래그해 놓거나 클릭하여 삭제'}
       >
-        <Trash2 className={`w-5 h-5 ${isOverTrash ? 'animate-bounce' : ''}`} />
+        <Trash2 className={`w-5 h-5 ${isOverTrash ? 'scale-125' : ''} transition-transform`} />
         <span className="text-xs font-semibold">
-          {isOverTrash ? '여기에 놓아 블록 삭제' : '휴지통'}
+          {isOverTrash ? '놓아서 삭제' : selectedBlockId ? '선택 블록 삭제' : '휴지통'}
         </span>
       </div>
+
+      {/* Right-Click Context Menu */}
+      <ContextMenu
+        state={contextMenu}
+        onClose={() => setContextMenu((prev) => ({ ...prev, isOpen: false }))}
+        onDuplicateBlock={(id) => {
+          manager.duplicateBlock(id);
+          onWorkspaceChange();
+        }}
+        onDeleteBlock={(id) => {
+          manager.removeBlock(id);
+          onSelectBlock(null);
+          onWorkspaceChange();
+        }}
+        onDetachBlock={(id) => {
+          manager.disconnectBlock(id);
+          onWorkspaceChange();
+        }}
+        onCopyBlockCode={(id) => {
+          const blk = manager.getBlock(id);
+          if (blk) {
+            navigator.clipboard.writeText(`// Block ${blk.opcode}\n// ID: ${blk.id}`);
+          }
+        }}
+        onUndo={() => {
+          if (manager.undo()) onWorkspaceChange();
+        }}
+        onRedo={() => {
+          if (manager.redo()) onWorkspaceChange();
+        }}
+        onCleanUp={() => {
+          manager.cleanUpBlocks();
+          onWorkspaceChange();
+        }}
+        onResetView={handleResetView}
+        onClearAll={() => {
+          if (confirm('캔버스의 모든 블록을 삭제하시겠습니까?')) {
+            manager.clearAllBlocks();
+            onSelectBlock(null);
+            onWorkspaceChange();
+          }
+        }}
+      />
     </div>
   );
 };

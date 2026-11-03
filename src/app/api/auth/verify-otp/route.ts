@@ -96,3 +96,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '인증번호 확인 중 문제가 발생했습니다.' }, { status: 500 });
   }
 }
+

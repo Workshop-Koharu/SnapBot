@@ -40,3 +40,4 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: '리믹스 실패' }, { status: 500 });
   }
 }
+

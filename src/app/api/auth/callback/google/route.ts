@@ -87,9 +87,13 @@ export async function GET(req: NextRequest) {
       console.warn('[Google OAuth DB Warning]:', dbErr);
     }
 
-    // 4. Send Welcome Email if this is a first-time signup
-    if (isNewUser) {
-      await sendWelcomeEmail(email, nickname);
+    // 4. Send Welcome Email if this is a first-time signup or newly verified via Google
+    if (isNewUser || !user?.emailVerified) {
+      try {
+        await sendWelcomeEmail(email, nickname);
+      } catch (mailErr) {
+        console.error('[Google OAuth Welcome Email Error]:', mailErr);
+      }
     }
 
     // 5. Generate Session JWT & Cookie
@@ -108,3 +112,4 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${origin}/login?error=unknown_oauth_error`);
   }
 }
+

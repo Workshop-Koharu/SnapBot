@@ -46,7 +46,7 @@ export class WorkspaceManager {
       x: 80,
       y: 104,
       fields: {
-        content: '🤖 SnapBot 봇이 준비되었습니다! 슬래시 명령어를 사용해 보세요.',
+        content: 'SnapBot 봇이 준비되었습니다. 슬래시 명령어를 사용해 보세요.',
       },
       inputs: {},
       prev: 'block-ready-starter',
@@ -74,7 +74,7 @@ export class WorkspaceManager {
       x: 420,
       y: 104,
       fields: {
-        content: '🏓 퐁! SnapBot이 0.05초만에 응답했습니다.',
+        content: 'Pong! SnapBot이 0.05초만에 응답했습니다.',
       },
       inputs: {},
       prev: 'block-cmd-starter',
@@ -293,6 +293,63 @@ export class WorkspaceManager {
       if (parent.statementElse === blockId) parent.statementElse = undefined;
       block.parent = undefined;
     }
+    this.recordState();
+  }
+
+  public clearAllBlocks() {
+    this.blocks = {};
+    this.recordState();
+  }
+
+  public duplicateBlock(blockId: string): BlockInstance | null {
+    const original = this.blocks[blockId];
+    if (!original) return null;
+
+    const newId = `block_${Math.random().toString(36).substring(2, 9)}`;
+    const duplicated: BlockInstance = {
+      ...original,
+      id: newId,
+      x: original.x + 30,
+      y: original.y + 30,
+      fields: { ...original.fields },
+      inputs: { ...original.inputs },
+      prev: undefined,
+      next: undefined,
+      parent: undefined,
+    };
+
+    this.blocks[newId] = duplicated;
+    this.recordState();
+    return duplicated;
+  }
+
+  public cleanUpBlocks() {
+    const roots: BlockInstance[] = Object.values(this.blocks).filter(
+      (b) => !b.prev && !b.parent
+    );
+
+    let startX = 60;
+    let startY = 60;
+
+    roots.forEach((root, idx) => {
+      const dx = startX - root.x;
+      const dy = startY - root.y;
+      this.moveBlock(root.id, dx, dy);
+
+      // Estimate height of this chain
+      let count = 0;
+      let curr: string | undefined = root.id;
+      while (curr && this.blocks[curr]) {
+        count++;
+        curr = this.blocks[curr].next;
+      }
+      startY += count * 52 + 30;
+      if (startY > 600) {
+        startY = 60;
+        startX += 360;
+      }
+    });
+
     this.recordState();
   }
 

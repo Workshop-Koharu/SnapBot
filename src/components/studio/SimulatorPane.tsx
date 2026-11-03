@@ -273,3 +273,4 @@ export const SimulatorPane: React.FC<SimulatorPaneProps> = ({ simulator }) => {
     </div>
   );
 };
+

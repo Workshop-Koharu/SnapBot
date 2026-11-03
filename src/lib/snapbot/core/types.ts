@@ -11,8 +11,11 @@ export type BlockCategory =
   | 'messages'
   | 'embeds'
   | 'control'
+  | 'operators'
   | 'variables'
-  | 'moderation';
+  | 'discord_data'
+  | 'moderation'
+  | 'database';
 
 export type FieldInputType =
   | 'text'
@@ -42,12 +45,11 @@ export interface BlockDefinition {
   opcode: string;
   category: BlockCategory;
   shape: BlockShape;
-  label: string; // e.g. "when bot is ready", "send message {content} to {channel}"
+  label: string; // e.g. "봇이 준비되었을 때", "채널에 메시지 전송 {content}"
   description: string;
   color: string;
   fields: FieldDefinition[];
   slots: InputSlotDefinition[];
-  // Compilation logic callback
   toTypeScript: (ctx: CompileContext, block: BlockInstance) => string;
 }
 
@@ -68,30 +70,22 @@ export interface BlockInstance {
   shape: BlockShape;
   x: number;
   y: number;
-  // Field values entered directly into input boxes/dropdowns
   fields: Record<string, string | number | boolean>;
-  // Connected value/boolean reporter blocks inside input slots
-  inputs: Record<string, string>; // slotName -> blockId
-  // Next connected command block (below)
+  inputs: Record<string, string>;
   next?: string;
-  // Previous connected command/hat block (above)
   prev?: string;
-  // Parent block if this block is plugged into a slot
   parent?: string;
-  // Child blocks inside C-block body
   statement?: string;
-  // Child blocks inside C-block else body
   statementElse?: string;
-  // For UI state
   isCollapsed?: boolean;
 }
 
 export type SnapType =
-  | 'next'          // snapping below a command or hat
-  | 'prev'          // snapping above a command
-  | 'statement'     // inside a C-block body
-  | 'statementElse' // inside a C-block else body
-  | 'input';        // inside a value or boolean slot
+  | 'next'
+  | 'prev'
+  | 'statement'
+  | 'statementElse'
+  | 'input';
 
 export interface SnapPoint {
   id: string;
@@ -123,7 +117,6 @@ export interface CategoryMeta {
   name: string;
   color: string;
   bgClass: string;
-  borderClass: string;
   iconName: string;
   description: string;
 }
@@ -131,56 +124,74 @@ export interface CategoryMeta {
 export const CATEGORY_DEFINITIONS: Record<BlockCategory, CategoryMeta> = {
   events: {
     id: 'events',
-    name: '이벤트 (Events)',
-    color: '#F59E0B',
+    name: '이벤트',
+    color: '#EAB308',
     bgClass: 'bg-amber-500',
-    borderClass: 'border-amber-400',
     iconName: 'Zap',
-    description: '봇 시작, 메시지 수신, 슬래시 명령어, 버튼 클릭 등 트리거 블록',
+    description: '봇 시작, 메시지 수신, 슬래시 명령어, 상호작용 등 트리거 시작 블록',
   },
   messages: {
     id: 'messages',
-    name: '메시지 & 응답',
+    name: '메시지 & 반응',
     color: '#3B82F6',
     bgClass: 'bg-blue-500',
-    borderClass: 'border-blue-400',
     iconName: 'MessageSquare',
-    description: '채널 메시지 전송, 답장, 에페메럴 응답, 메시지 수정 및 삭제',
+    description: '채널 메시지 전송, 답장, 수정, 삭제, 리액션 이모지 반응, 스레드',
   },
   embeds: {
     id: 'embeds',
-    name: '임베드 & UI 컴포넌트',
+    name: '임베드 & UI',
     color: '#8B5CF6',
     bgClass: 'bg-purple-500',
-    borderClass: 'border-purple-400',
     iconName: 'Layout',
-    description: '세련된 Discord 임베드 박스, 인터랙티브 버튼, 선택 메뉴 구성',
+    description: '리치 임베드 카드, 인터랙티브 버튼, 선택 드롭다운 메뉴, 모달 팝업',
   },
   control: {
     id: 'control',
-    name: '흐름 및 논리 제어',
+    name: '흐름 제어 & 반복',
     color: '#10B981',
     bgClass: 'bg-emerald-500',
-    borderClass: 'border-emerald-400',
     iconName: 'GitFork',
-    description: '만약(if/else), N번 반복, 딜레이 대기, 비교 연산 및 논리 게이트',
+    description: '만약(if/else), N번 반복, 조건 반복(while), 리스트 순회, 대기, 에러 처리',
+  },
+  operators: {
+    id: 'operators',
+    name: '연산 & 논리',
+    color: '#14B8A6',
+    bgClass: 'bg-teal-500',
+    iconName: 'Binary',
+    description: '사칙연산, 비교 연산자(=, !=, >, <), 논리곱(AND), 논리합(OR), 문자열 조작',
   },
   variables: {
     id: 'variables',
-    name: '변수 & 데이터',
-    color: '#EC4899',
-    bgClass: 'bg-pink-500',
-    borderClass: 'border-pink-400',
-    iconName: 'Database',
-    description: '변수 저장/연산, 유저 정보, 채널 정보, 메시지 내용, 영구 DB',
+    name: '변수 & 리스트',
+    color: '#F97316',
+    bgClass: 'bg-orange-500',
+    iconName: 'Variable',
+    description: '변수 저장/연산, 리스트(배열) 생성/추가/삭제, JSON 데이터 처리',
+  },
+  discord_data: {
+    id: 'discord_data',
+    name: '디스코드 정보',
+    color: '#06B6D4',
+    bgClass: 'bg-cyan-500',
+    iconName: 'Info',
+    description: '메시지 작성자, 채널, 서버, 슬래시 명령어 옵션값 조회',
   },
   moderation: {
     id: 'moderation',
-    name: '서버 관리 (Mod)',
+    name: '서버 관리 & 보안',
     color: '#EF4444',
-    bgClass: 'bg-red-500',
-    borderClass: 'border-red-400',
+    bgClass: 'bg-rose-500',
     iconName: 'ShieldAlert',
-    description: '유저 추방, 차단, 타임아웃, 역할 부여, 메시지 일괄 청소',
+    description: '유저 추방, 차단(밴), 타임아웃, 역할 관리, 채널 관리, 일괄 청소',
+  },
+  database: {
+    id: 'database',
+    name: '영구 DB 저장소',
+    color: '#EC4899',
+    bgClass: 'bg-pink-500',
+    iconName: 'Database',
+    description: '봇 재부팅 후에도 유지되는 키-값 영구 데이터베이스 저장 및 조회',
   },
 };

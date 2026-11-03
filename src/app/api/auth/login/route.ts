@@ -68,3 +68,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '로그인 처리 중 문제가 발생했습니다.' }, { status: 500 });
   }
 }
+

@@ -17,6 +17,11 @@ export const metadata: Metadata = {
     '오픈소스',
   ],
   authors: [{ name: 'Workshop-Koharu', url: 'https://github.com/Workshop-Koharu' }],
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/icon.png',
+  },
   metadataBase: new URL('https://snapbot.koharu.live'),
   openGraph: {
     title: 'SnapBot (스냅봇) - 비주얼 블록 코딩 디스코드 봇 플랫폼',
@@ -42,7 +47,8 @@ export default function RootLayout({
   return (
     <html lang="ko" className="dark">
       <head>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" href="/icon.png" />
       </head>
       <body className="min-h-screen bg-[#090D16] text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
         {children}
@@ -50,3 +56,4 @@ export default function RootLayout({
     </html>
   );
 }
+

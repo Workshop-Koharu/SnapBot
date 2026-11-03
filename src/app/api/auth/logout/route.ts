@@ -6,3 +6,4 @@ export async function POST() {
   clearSessionCookie(response.headers);
   return response;
 }
+

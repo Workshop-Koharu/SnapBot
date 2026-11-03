@@ -169,3 +169,4 @@ export function generateReporterPath(width = 130, height = 32): string {
     `Z`,
   ].join(' ');
 }
+

@@ -79,3 +79,4 @@ model ProjectTemplate {
   isOfficial   Boolean  @default(true)
   createdAt    DateTime @default(now())
 }
+

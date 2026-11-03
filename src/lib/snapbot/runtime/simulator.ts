@@ -206,7 +206,7 @@ export class BotSimulator {
             id: Math.random().toString(36).substring(2, 9),
             sender: 'bot',
             authorName: 'SnapBot',
-            content: block.opcode === 'action_reply_ephemeral' ? `🤫 [나에게만 보임] ${content}` : content,
+            content: block.opcode === 'action_reply_ephemeral' ? `[비공개] ${content}` : content,
             timestamp: new Date().toLocaleTimeString('ko-KR'),
           });
           this.notify();
@@ -217,7 +217,7 @@ export class BotSimulator {
           const emoji = String(block.fields.emoji || '✅');
           const lastMsg = this.messages[this.messages.length - 1];
           if (lastMsg) {
-            lastMsg.content = `${lastMsg.content}  [반응: ${emoji}]`;
+            lastMsg.content = `${lastMsg.content} (반응: ${emoji})`;
             this.notify();
           }
           break;
@@ -306,3 +306,4 @@ export class BotSimulator {
     }
   }
 }
+

@@ -47,3 +47,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '프로젝트를 생성할 수 없습니다.' }, { status: 500 });
   }
 }
+

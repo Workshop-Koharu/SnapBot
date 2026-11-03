@@ -90,3 +90,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '회원가입 처리 중 오류가 발생했습니다.' }, { status: 500 });
   }
 }
+

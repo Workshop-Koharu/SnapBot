@@ -131,14 +131,11 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#090D16] p-6 text-slate-100">
       <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
-        {/* Glow accent */}
-        <div className="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-
         {/* Brand Header */}
         <div className="text-center mb-6">
           <Link href="/" className="inline-flex items-center gap-2 mb-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-600/30">
-              <Bot className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center bg-slate-800 border border-slate-700">
+              <img src="/icon.png" alt="SnapBot" className="w-6 h-6 object-contain" />
             </div>
             <span className="font-extrabold text-lg text-white">SnapBot</span>
           </Link>
@@ -323,3 +320,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

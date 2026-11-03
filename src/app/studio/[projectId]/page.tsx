@@ -47,3 +47,4 @@ export default function ProjectStudioPage() {
 
   return <StudioLayout projectId={projectId} initialData={projectData} />;
 }
+
