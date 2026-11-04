@@ -6,8 +6,12 @@
 // ==============================================================================
 
 import { BlockDefinition, BlockInstance, CompileContext } from '../core/types';
+import { ADDITIONAL_BLOCKS } from './additional-blocks';
+import { ADDITIONAL_BLOCKS_2 } from './additional-blocks-2';
+import { ADDITIONAL_BLOCKS_3 } from './additional-blocks-3';
+import { ADDITIONAL_BLOCKS_4 } from './additional-blocks-4';
 
-export const STANDARD_BLOCKS: Record<string, BlockDefinition> = {
+const BASE_STANDARD_BLOCKS: Record<string, BlockDefinition> = {
   // ----------------------------------------------------------------------------
   // 1. EVENT BLOCKS (이벤트) - 22 Blocks
   // ----------------------------------------------------------------------------
@@ -1762,4 +1766,12 @@ export const STANDARD_BLOCKS: Record<string, BlockDefinition> = {
       return ctx.indent(`await fetch('${endpoint}', { method: 'POST' }).catch(err => console.error('IoT Relay Error:', err));`);
     },
   },
+};
+
+export const STANDARD_BLOCKS: Record<string, BlockDefinition> = {
+  ...BASE_STANDARD_BLOCKS,
+  ...ADDITIONAL_BLOCKS,
+  ...ADDITIONAL_BLOCKS_2,
+  ...ADDITIONAL_BLOCKS_3,
+  ...ADDITIONAL_BLOCKS_4,
 };

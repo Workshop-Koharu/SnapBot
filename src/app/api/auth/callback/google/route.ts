@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { sendWelcomeEmail } from '@/lib/auth/email';
-import { createSessionToken, setSessionCookie } from '@/lib/auth/session';
+import { sendOtpVerificationEmail } from '@/lib/auth/email';
+import { setPendingRegistration } from '@/lib/auth/pending';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -50,13 +50,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(`${origin}/login?error=profile_fetch_failed`);
     }
 
-    const email = profile.email.toLowerCase();
-    const nickname = profile.name || profile.given_name || email.split('@')[0];
+    const email = profile.email.toLowerCase().trim();
+    const nickname = (profile.name || profile.given_name || email.split('@')[0]).trim();
     const avatarUrl = profile.picture;
 
-    // 3. Find or Create User in database
+    // 3. Find or Create User in database (with emailVerified initially false until OTP confirmed)
     let user = null;
-    let isNewUser = false;
 
     try {
       user = await prisma.user.findUnique({ where: { email } });
@@ -68,17 +67,14 @@ export async function GET(req: NextRequest) {
             avatarUrl,
             provider: 'google',
             providerId: profile.id,
-            emailVerified: true,
+            emailVerified: false,
           },
         });
-        isNewUser = true;
       } else {
-        // Link Google ID if needed
         user = await prisma.user.update({
           where: { id: user.id },
           data: {
             avatarUrl: avatarUrl || user.avatarUrl,
-            emailVerified: true,
             providerId: profile.id,
           },
         });
@@ -87,29 +83,33 @@ export async function GET(req: NextRequest) {
       console.warn('[Google OAuth DB Warning]:', dbErr);
     }
 
-    // 4. Send Welcome Email if this is a first-time signup or newly verified via Google
-    if (isNewUser || !user?.emailVerified) {
-      try {
-        await sendWelcomeEmail(email, nickname);
-      } catch (mailErr) {
-        console.error('[Google OAuth Welcome Email Error]:', mailErr);
-      }
+    // 4. Generate 6-digit numeric OTP code
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    try {
+      await prisma.emailVerification.create({
+        data: {
+          email,
+          userId: user?.id,
+          code: otpCode,
+          expiresAt,
+        },
+      });
+    } catch (e) {
+      console.error('[Google OAuth EmailVerification DB Error]:', e);
     }
 
-    // 5. Generate Session JWT & Cookie
-    const sessionToken = await createSessionToken({
-      userId: user?.id || profile.id,
-      email,
-      nickname,
-      avatarUrl,
-    });
+    // Cache pending nickname to guarantee it is preserved during OTP verification
+    setPendingRegistration(email, nickname, 'google');
 
-    const redirectResponse = NextResponse.redirect(`${origin}/dashboard`);
-    setSessionCookie(redirectResponse.headers, sessionToken);
-    return redirectResponse;
+    // Send 6-digit OTP verification email via Resend
+    await sendOtpVerificationEmail(email, otpCode, nickname);
+
+    // Redirect to OTP verification screen with email prefilled
+    return NextResponse.redirect(`${origin}/verify-otp?email=${encodeURIComponent(email)}&provider=google`);
   } catch (err) {
     console.error('Google OAuth Callback Exception:', err);
     return NextResponse.redirect(`${origin}/login?error=unknown_oauth_error`);
   }
 }
-

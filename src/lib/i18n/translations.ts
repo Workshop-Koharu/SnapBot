@@ -13,6 +13,7 @@ export interface Translations {
     dashboard: string;
     explore: string;
     docs: string;
+    settings: string;
     login: string;
     register: string;
     logout: string;
@@ -89,6 +90,7 @@ export interface Translations {
     moderation: string;
     database: string;
     integrations: string;
+    audio: string;
   };
   // Context Menu
   contextMenu: {
@@ -211,6 +213,30 @@ export interface Translations {
     documentation: string;
     community: string;
   };
+  // User Settings Page
+  settings: {
+    title: string;
+    subtitle: string;
+    profileTab: string;
+    preferencesTab: string;
+    securityTab: string;
+    cookiesTab: string;
+    nicknameLabel: string;
+    emailLabel: string;
+    verifiedBadge: string;
+    languageLabel: string;
+    soundsLabel: string;
+    soundsDesc: string;
+    testSnapBtn: string;
+    testBloopBtn: string;
+    defaultExportLabel: string;
+    saveBtn: string;
+    savedToast: string;
+    dangerZone: string;
+    clearDraftsBtn: string;
+    clearDraftsDesc: string;
+    deleteAccountBtn: string;
+  };
 }
 
 export const TRANSLATIONS: Record<Language, Translations> = {
@@ -220,6 +246,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       dashboard: 'My Projects',
       explore: 'Community Hub',
       docs: 'Docs & API',
+      settings: 'Settings',
       login: 'Sign In',
       register: 'Sign Up',
       logout: 'Sign Out',
@@ -294,6 +321,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       moderation: 'Moderation & Security',
       database: 'Persistent DB',
       integrations: 'API & Hardware',
+      audio: 'Voice & Audio',
     },
     contextMenu: {
       duplicate: 'Duplicate Block',
@@ -411,6 +439,29 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       documentation: 'Documentation',
       community: 'Community',
     },
+    settings: {
+      title: 'Preferences & Settings',
+      subtitle: 'Manage your profile nickname, sound effects, UI language, and bot defaults.',
+      profileTab: 'Profile',
+      preferencesTab: 'Preferences',
+      securityTab: 'Security',
+      cookiesTab: 'Cookies',
+      nicknameLabel: 'Display Nickname',
+      emailLabel: 'Email Address',
+      verifiedBadge: 'Verified',
+      languageLabel: 'Platform Language',
+      soundsLabel: 'Sound Effects',
+      soundsDesc: 'Play audio feedback on magnetic block snap, trash deletion, and simulator messages.',
+      testSnapBtn: 'Test Snap Sound',
+      testBloopBtn: 'Test Message Bloop',
+      defaultExportLabel: 'Default Code Export',
+      saveBtn: 'Save Settings',
+      savedToast: 'Settings saved successfully!',
+      dangerZone: 'Danger Zone',
+      clearDraftsBtn: 'Clear Local Workspace Drafts',
+      clearDraftsDesc: 'Removes locally cached offline project drafts from browser storage.',
+      deleteAccountBtn: 'Delete Account',
+    },
   },
 
   ja: {
@@ -419,6 +470,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       dashboard: 'マイプロジェクト',
       explore: 'コミュニティ',
       docs: 'ドキュメント & API',
+      settings: '設定',
       login: 'ログイン',
       register: '新規登録',
       logout: 'ログアウト',
@@ -493,6 +545,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       moderation: 'サーバー管理 & セキュリティ',
       database: '永続DBストレージ',
       integrations: 'API & ハードウェア',
+      audio: '音声 & サウンド',
     },
     contextMenu: {
       duplicate: 'ブロックを複製',
@@ -610,6 +663,29 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       documentation: 'ドキュメント',
       community: 'コミュニティ',
     },
+    settings: {
+      title: '環境設定 & アカウント',
+      subtitle: 'プロフィールニックネーム、効果音、UI言語、ボットの初期設定を管理します。',
+      profileTab: 'プロフィール',
+      preferencesTab: '環境設定',
+      securityTab: 'セキュリティ',
+      cookiesTab: 'クッキー',
+      nicknameLabel: '表示ニックネーム',
+      emailLabel: 'メールアドレス',
+      verifiedBadge: '認証済み',
+      languageLabel: '言語設定',
+      soundsLabel: '効果音',
+      soundsDesc: 'ブロックの磁石スナップ、削除、シミュレータのメッセージ着信時に効果音を再生します。',
+      testSnapBtn: 'スナップ音テスト',
+      testBloopBtn: '着信音テスト',
+      defaultExportLabel: 'デフォルト出力形式',
+      saveBtn: '設定を保存',
+      savedToast: '設定が保存されました！',
+      dangerZone: '危険なゾーン',
+      clearDraftsBtn: 'ローカルの下書きを消去',
+      clearDraftsDesc: 'ブラウザにキャッシュされたオフラインプロジェクトのドラフトを消去します。',
+      deleteAccountBtn: 'アカウント削除',
+    },
   },
 
   ko: {
@@ -618,6 +694,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       dashboard: '내 프로젝트',
       explore: '커뮤니티 허브',
       docs: '공식 가이드 & API',
+      settings: '설정',
       login: '로그인',
       register: '회원가입',
       logout: '로그아웃',
@@ -692,6 +769,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       moderation: '서버 관리 & 보안',
       database: '영구 DB 저장소',
       integrations: 'API & 하드웨어',
+      audio: '음성 & 사운드 (Voice)',
     },
     contextMenu: {
       duplicate: '블록 복제',
@@ -808,6 +886,29 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       cookiePolicy: '쿠키 정책',
       documentation: '공식 문서',
       community: '커뮤니티',
+    },
+    settings: {
+      title: '환경설정 및 계정 관리',
+      subtitle: '프로필 닉네임, UI 효과음, 표시 언어 및 디스코드 봇 기본값을 관리합니다.',
+      profileTab: '프로필',
+      preferencesTab: '환경설정',
+      securityTab: '보안',
+      cookiesTab: '쿠키',
+      nicknameLabel: '표시 닉네임',
+      emailLabel: '이메일 주소',
+      verifiedBadge: '인증됨',
+      languageLabel: '기본 표시 언어',
+      soundsLabel: '인터랙션 효과음',
+      soundsDesc: '블록 자석 스냅 결합, 휴지통 삭제, 가상 시뮬레이터 메시지 수신 시 오디오 피드백을 재생합니다.',
+      testSnapBtn: '스냅 사운드 테스트',
+      testBloopBtn: '메시지 알림음 테스트',
+      defaultExportLabel: '기본 코드 내보내기 형식',
+      saveBtn: '설정 저장',
+      savedToast: '설정이 성공적으로 저장되었습니다!',
+      dangerZone: '위험 구역',
+      clearDraftsBtn: '로컬 오프라인 작업 임시데이터 초기화',
+      clearDraftsDesc: '브라우저에 임시 보관된 로컬 프로젝트 드래프트 데이터를 완전히 삭제합니다.',
+      deleteAccountBtn: '계정 탈퇴',
     },
   },
 };

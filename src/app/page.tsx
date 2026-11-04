@@ -6,6 +6,7 @@
 // (c) 2026 Workshop-Koharu
 // ==============================================================================
 
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Code2,
@@ -14,11 +15,25 @@ import {
   ArrowRight,
   Puzzle,
   Terminal,
+  Settings,
+  User,
 } from 'lucide-react';
 import { useI18n, LanguageSelector } from '@/lib/i18n/context';
 
 export default function LandingPage() {
   const { t } = useI18n();
+  const [currentUser, setCurrentUser] = useState<{ nickname?: string; email?: string } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/auth/session')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated && data.user) {
+          setCurrentUser(data.user);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#090D16] text-slate-100 font-sans">
@@ -57,20 +72,50 @@ export default function LandingPage() {
           <div className="flex items-center gap-2 sm:gap-3">
             <LanguageSelector />
 
-            <Link
-              href="/login"
-              className="text-xs font-semibold text-slate-300 hover:text-white px-2.5 py-1.5"
-            >
-              {t.nav.login}
-            </Link>
+            {currentUser ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/settings"
+                  title={t.nav.settings}
+                  className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+                >
+                  <Settings className="w-4 h-4" />
+                </Link>
 
-            <Link
-              href="/studio"
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
-            >
-              <span>{t.nav.startStudio}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-xl text-xs font-semibold transition-colors"
+                >
+                  <User className="w-3.5 h-3.5 text-indigo-400" />
+                  <span className="max-w-[120px] truncate">{currentUser.nickname || t.nav.dashboard}</span>
+                </Link>
+
+                <Link
+                  href="/studio"
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                >
+                  <span>{t.nav.startStudio}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/login"
+                  className="text-xs font-semibold text-slate-300 hover:text-white px-2.5 py-1.5"
+                >
+                  {t.nav.login}
+                </Link>
+
+                <Link
+                  href="/studio"
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                >
+                  <span>{t.nav.startStudio}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </header>

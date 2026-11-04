@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { sendOtpVerificationEmail } from '@/lib/auth/email';
+import { setPendingRegistration } from '@/lib/auth/pending';
 
 export async function POST(req: NextRequest) {
   try {
@@ -76,6 +77,9 @@ export async function POST(req: NextRequest) {
     } catch (e) {
       console.error('[EmailVerification DB Error]:', e);
     }
+
+    // Cache pending nickname to guarantee it is preserved during OTP verification
+    setPendingRegistration(normalizedEmail, String(nickname).trim(), 'local');
 
     // Send verification email via Resend
     await sendOtpVerificationEmail(normalizedEmail, otpCode, String(nickname).trim());

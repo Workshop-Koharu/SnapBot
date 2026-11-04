@@ -5,8 +5,8 @@ import { SESSION_COOKIE_NAME } from './lib/auth/session';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Protect /studio and all /studio/* subroutes
-  if (pathname.startsWith('/studio')) {
+  // Protect /studio and /settings subroutes
+  if (pathname.startsWith('/studio') || pathname.startsWith('/settings')) {
     const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
 
     if (!sessionToken) {
@@ -20,6 +20,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/studio/:path*'],
+  matcher: ['/studio/:path*', '/settings/:path*'],
 };
 

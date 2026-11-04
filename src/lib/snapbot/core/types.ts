@@ -16,7 +16,8 @@ export type BlockCategory =
   | 'discord_data'
   | 'moderation'
   | 'database'
-  | 'integrations';
+  | 'integrations'
+  | 'audio';
 
 export type FieldInputType =
   | 'text'
@@ -202,5 +203,13 @@ export const CATEGORY_DEFINITIONS: Record<BlockCategory, CategoryMeta> = {
     bgClass: 'bg-cyan-500',
     iconName: 'Cpu',
     description: '외부 REST API 호출, Webhook 발송, OpenAI AI 모델, MQTT / Serial / IoT 하드웨어 연동',
+  },
+  audio: {
+    id: 'audio',
+    name: '음성 & 사운드 (Voice)',
+    color: '#84CC16',
+    bgClass: 'bg-lime-500',
+    iconName: 'Volume2',
+    description: '음성 채널 접속/퇴장, 음원 스트리밍, 볼륨 조절, 음악 대기열(큐), 루프 및 일시정지',
   },
 };

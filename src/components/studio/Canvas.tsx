@@ -13,6 +13,7 @@ import { WorkspaceManager } from '@/lib/snapbot/core/workspace';
 import { findBestSnapCandidate } from '@/lib/snapbot/core/snapping';
 import { BlockView } from './BlockView';
 import { ContextMenu, ContextMenuState } from './ContextMenu';
+import { sounds } from '@/lib/audio/sounds';
 import { ZoomIn, ZoomOut, RotateCcw, Trash2, Compass } from 'lucide-react';
 
 interface CanvasProps {
@@ -182,9 +183,11 @@ export const Canvas: React.FC<CanvasProps> = ({
     if (draggingBlockId) {
       // If released over trash can, delete block!
       if (isOverTrash) {
+        sounds.playDelete();
         manager.removeBlock(draggingBlockId);
         onSelectBlock(null);
       } else if (snapCandidate) {
+        sounds.playSnap();
         manager.connectBlock(draggingBlockId, snapCandidate);
       }
 
@@ -309,9 +312,11 @@ export const Canvas: React.FC<CanvasProps> = ({
     }
     if (draggingBlockId) {
       if (isOverTrash) {
+        sounds.playDelete();
         manager.removeBlock(draggingBlockId);
         onSelectBlock(null);
       } else if (snapCandidate) {
+        sounds.playSnap();
         manager.connectBlock(draggingBlockId, snapCandidate);
       }
 
@@ -472,6 +477,7 @@ export const Canvas: React.FC<CanvasProps> = ({
         ref={trashRef}
         onClick={() => {
           if (selectedBlockId) {
+            sounds.playDelete();
             manager.removeBlock(selectedBlockId);
             onSelectBlock(null);
             onWorkspaceChange();

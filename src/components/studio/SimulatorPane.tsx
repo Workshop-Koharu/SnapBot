@@ -31,7 +31,9 @@ import {
   ShieldAlert,
   ChevronDown,
   X,
+  ExternalLink,
 } from 'lucide-react';
+import { sounds } from '@/lib/audio/sounds';
 
 export type ChannelType = 'text' | 'voice' | 'announcement' | 'forum';
 
@@ -63,6 +65,64 @@ const DEFAULT_CHANNELS: SimChannel[] = [
   { id: 'general-voice', name: 'General Voice', type: 'voice' },
   { id: 'discussions', name: 'feature-discussions', type: 'forum' },
 ];
+
+function extractDiscordLinkEmbed(text?: string) {
+  if (!text) return null;
+  const match = text.match(/https?:\/\/[^\s]+/i);
+  if (!match) return null;
+  const url = match[0];
+
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+
+    if (host.includes('snapbot.koharu.live') || host.includes('koharu.live')) {
+      return {
+        url,
+        provider: 'SnapBot Platform',
+        title: 'SnapBot — Visual Block-Coding IDE for Discord Bots',
+        description:
+          'Build powerful Discord bots visually with zero latency, Scratch & Entry style magnetic snapping, and real-time discord.js v14 compilation.',
+        color: '#6366F1',
+        thumbnail: 'https://snapbot.koharu.live/icon.png',
+        hasComponentV2: true,
+      };
+    }
+    if (host.includes('youtube.com') || host.includes('youtu.be')) {
+      return {
+        url,
+        provider: 'YouTube',
+        title: 'YouTube Media Content',
+        description: 'Watch video streams, tutorials, and music on YouTube.',
+        color: '#FF0000',
+        thumbnail: 'https://www.youtube.com/favicon.ico',
+        hasComponentV2: false,
+      };
+    }
+    if (host.includes('discord.com') || host.includes('discord.gg')) {
+      return {
+        url,
+        provider: 'Discord',
+        title: 'Discord Application & Components V2 Preview',
+        description: 'Interactive Discord components v2 with ActionRows, SelectMenus, and Buttons.',
+        color: '#5865F2',
+        thumbnail: null,
+        hasComponentV2: true,
+      };
+    }
+    return {
+      url,
+      provider: host,
+      title: host,
+      description: `External link preview: ${url}`,
+      color: '#4752C4',
+      thumbnail: null,
+      hasComponentV2: false,
+    };
+  } catch {
+    return null;
+  }
+}
 
 export const SimulatorPane: React.FC<SimulatorPaneProps> = ({ simulator }) => {
   const { t } = useI18n();
@@ -134,10 +194,20 @@ export const SimulatorPane: React.FC<SimulatorPaneProps> = ({ simulator }) => {
     }
   }, []);
 
+  const prevMsgCountRef = useRef(0);
+
   // Sync simulator updates
   useEffect(() => {
     const update = () => {
-      setMessages([...simulator.getMessages()]);
+      const msgs = simulator.getMessages();
+      if (msgs.length > prevMsgCountRef.current && msgs.length > 0) {
+        const last = msgs[msgs.length - 1];
+        if (last.sender === 'bot') {
+          sounds.playMessage();
+        }
+      }
+      prevMsgCountRef.current = msgs.length;
+      setMessages([...msgs]);
       setLogs([...simulator.getLogs()]);
     };
 
@@ -159,6 +229,7 @@ export const SimulatorPane: React.FC<SimulatorPaneProps> = ({ simulator }) => {
     if (!input.trim()) return;
     const txt = input;
     setInput('');
+    sounds.playMessage();
     await simulator.sendUserMessage(txt);
   };
 
@@ -723,6 +794,73 @@ export const SimulatorPane: React.FC<SimulatorPaneProps> = ({ simulator }) => {
                           )}
                         </div>
                       )}
+
+                      {/* Discord Rich Link Embed (Automatic detection if no explicit embed) */}
+                      {!msg.embed && (() => {
+                        const linkEmbed = extractDiscordLinkEmbed(msg.content);
+                        if (!linkEmbed) return null;
+                        return (
+                          <div
+                            className="mt-2 p-3 rounded-md bg-[#2B2D31] border-l-4 max-w-md shadow-md"
+                            style={{ borderLeftColor: linkEmbed.color }}
+                          >
+                            <div className="text-[10px] uppercase font-bold text-slate-400 mb-1 flex items-center justify-between">
+                              <span>{linkEmbed.provider}</span>
+                              <ExternalLink className="w-3 h-3 text-slate-400" />
+                            </div>
+                            <a
+                              href={linkEmbed.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-bold text-[#00A8FC] hover:underline text-xs block mb-1"
+                            >
+                              {linkEmbed.title}
+                            </a>
+                            <p className="text-xs text-slate-300 leading-relaxed mb-2">
+                              {linkEmbed.description}
+                            </p>
+
+                            {linkEmbed.thumbnail && (
+                              <div className="mt-2">
+                                <img
+                                  src={linkEmbed.thumbnail}
+                                  alt="Thumbnail"
+                                  className="w-10 h-10 rounded-lg object-contain bg-slate-900 p-1 border border-slate-700"
+                                />
+                              </div>
+                            )}
+
+                            {/* Discord Component V2: ActionRow Buttons & Select Menu */}
+                            {linkEmbed.hasComponentV2 && (
+                              <div className="mt-3 pt-2.5 border-t border-white/5 space-y-2">
+                                <div className="text-[10px] font-semibold text-slate-400">
+                                  Discord Components V2 (ActionRow)
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <button
+                                    onClick={() => {
+                                      sounds.playClick();
+                                      simulator.sendUserMessage('/ping');
+                                    }}
+                                    className="px-2.5 py-1 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded text-[11px] font-semibold transition-colors flex items-center gap-1 shadow-sm"
+                                  >
+                                    <span>Interactive Ping</span>
+                                  </button>
+                                  <a
+                                    href={linkEmbed.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-2.5 py-1 bg-[#4E5058] hover:bg-[#6D6F78] text-white rounded text-[11px] font-semibold transition-colors flex items-center gap-1 shadow-sm"
+                                  >
+                                    <span>Visit URL</span>
+                                    <ExternalLink className="w-3 h-3" />
+                                  </a>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
 
                       {/* Interactive Buttons */}
                       {msg.buttons && msg.buttons.length > 0 && (

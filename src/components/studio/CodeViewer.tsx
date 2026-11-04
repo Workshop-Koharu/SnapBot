@@ -11,6 +11,7 @@ import JSZip from 'jszip';
 import { WorkspaceData } from '@/lib/snapbot/core/types';
 import { compileWorkspace, compileToJavaScript, compileToPython } from '@/lib/snapbot/compiler/compiler';
 import { useI18n } from '@/lib/i18n/context';
+import { sounds } from '@/lib/audio/sounds';
 import {
   Copy,
   Check,
@@ -66,6 +67,7 @@ export const CodeViewer: React.FC<CodeViewerProps> = ({
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(activeCode);
+    sounds.playSuccess();
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

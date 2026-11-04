@@ -11,6 +11,7 @@ import { BlockCategory, CATEGORY_DEFINITIONS } from '@/lib/snapbot/core/types';
 import { STANDARD_BLOCKS } from '@/lib/snapbot/blocks/definitions';
 import { BlockPaletteItem } from './BlockPaletteItem';
 import { useI18n } from '@/lib/i18n/context';
+import { sounds } from '@/lib/audio/sounds';
 import {
   Zap,
   MessageSquare,
@@ -23,6 +24,7 @@ import {
   Database,
   Search,
   Cpu,
+  Volume2,
 } from 'lucide-react';
 
 interface PaletteProps {
@@ -41,6 +43,7 @@ const CATEGORY_ICONS: Record<string, React.FC<{ className?: string }>> = {
   ShieldAlert,
   Database,
   Cpu,
+  Volume2,
 };
 
 export const Palette: React.FC<PaletteProps> = ({ onAddBlock, className = '' }) => {
@@ -117,7 +120,14 @@ export const Palette: React.FC<PaletteProps> = ({ onAddBlock, className = '' }) 
           </div>
         ) : (
           filteredBlocks.map((def) => (
-            <BlockPaletteItem key={def.opcode} def={def} onAdd={onAddBlock} />
+            <BlockPaletteItem
+              key={def.opcode}
+              def={def}
+              onAdd={(opcode) => {
+                sounds.playClick();
+                onAddBlock(opcode);
+              }}
+            />
           ))
         )}
       </div>
