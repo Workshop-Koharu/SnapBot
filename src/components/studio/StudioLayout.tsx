@@ -291,6 +291,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({ projectId, initialDa
         <div className={`md:hidden w-full h-full ${mobileTab === 'code' ? 'block' : 'hidden'}`}>
           <CodeViewer
             code={compiledResult.code}
+            workspaceData={manager.exportData()}
             projectName={projectName}
             blockCount={compiledResult.blockCount}
           />
@@ -302,6 +303,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({ projectId, initialDa
             {rightTab === 'code' ? (
               <CodeViewer
                 code={compiledResult.code}
+                workspaceData={manager.exportData()}
                 projectName={projectName}
                 blockCount={compiledResult.blockCount}
               />

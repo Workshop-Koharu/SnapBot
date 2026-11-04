@@ -26,15 +26,32 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [lang, setLangState] = useState<Language>('en');
 
   useEffect(() => {
+    // 1. Check localStorage
     const saved = localStorage.getItem('snapbot_lang') as Language;
     if (saved && (saved === 'en' || saved === 'ja' || saved === 'ko')) {
       setLangState(saved);
+      return;
+    }
+
+    // 2. Check document.cookie fallback
+    if (typeof document !== 'undefined') {
+      const match = document.cookie.match(/(?:^|;\s*)snapbot_lang=([^;]+)/);
+      if (match && (match[1] === 'en' || match[1] === 'ja' || match[1] === 'ko')) {
+        setLangState(match[1] as Language);
+      }
     }
   }, []);
 
   const setLang = (newLang: Language) => {
     setLangState(newLang);
-    localStorage.setItem('snapbot_lang', newLang);
+    try {
+      localStorage.setItem('snapbot_lang', newLang);
+      if (typeof document !== 'undefined') {
+        document.cookie = `snapbot_lang=${newLang}; path=/; max-age=31536000; SameSite=Lax`;
+      }
+    } catch (e) {
+      console.warn('Failed to persist language setting:', e);
+    }
   };
 
   return (

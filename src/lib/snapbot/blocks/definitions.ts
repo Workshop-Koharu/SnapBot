@@ -1553,4 +1553,213 @@ export const STANDARD_BLOCKS: Record<string, BlockDefinition> = {
       return ctx.indent(`await database.set('${key}', null);`);
     },
   },
+
+  // ----------------------------------------------------------------------------
+  // 10. API & HARDWARE (IoT & 외부 연동) - 11 Blocks
+  // ----------------------------------------------------------------------------
+  api_http_get: {
+    opcode: 'api_http_get',
+    category: 'integrations',
+    shape: 'command',
+    label: 'REST API GET 요청 [URL: {url}] [결과를 {var}에 저장]',
+    description: '외부 HTTP REST API 엔드포인트를 호출하고 JSON 응답을 변수에 저장합니다.',
+    color: '#06B6D4',
+    fields: [
+      { name: 'url', type: 'text', label: 'URL', defaultValue: 'https://api.github.com' },
+      { name: 'var', type: 'variable', label: '저장 변수', defaultValue: 'api_result' },
+    ],
+    slots: [],
+    toTypeScript: (ctx, block) => {
+      const url = ctx.getFieldValue(block, 'url', 'https://api.github.com');
+      const varName = ctx.getFieldValue(block, 'var', 'api_result');
+      return ctx.indent(`const ${varName} = await fetch('${url}', { headers: { 'User-Agent': 'SnapBot-Agent' } }).then(r => r.json());`);
+    },
+  },
+
+  api_http_post: {
+    opcode: 'api_http_post',
+    category: 'integrations',
+    shape: 'command',
+    label: 'REST API POST 요청 [URL: {url}] [데이터: {payload}]',
+    description: '외부 웹 서버로 JSON 데이터 페이로드를 POST 전송합니다.',
+    color: '#06B6D4',
+    fields: [
+      { name: 'url', type: 'text', label: 'URL', defaultValue: 'https://httpbin.org/post' },
+      { name: 'payload', type: 'text', label: 'JSON 데이터', defaultValue: '{"status":"active"}' },
+    ],
+    slots: [],
+    toTypeScript: (ctx, block) => {
+      const url = ctx.getFieldValue(block, 'url', 'https://httpbin.org/post');
+      const payload = ctx.getFieldValue(block, 'payload', '{}');
+      return ctx.indent(`await fetch('${url}', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(${payload}) });`);
+    },
+  },
+
+  api_json_get: {
+    opcode: 'api_json_get',
+    category: 'integrations',
+    shape: 'reporter',
+    label: 'JSON 데이터에서 {field} 추출 [객체: {obj}]',
+    description: 'JSON 응답 객체에서 특정 키 이름의 데이터를 가져옵니다.',
+    color: '#06B6D4',
+    fields: [
+      { name: 'obj', type: 'variable', label: '객체 변수', defaultValue: 'api_result' },
+      { name: 'field', type: 'text', label: '필드명', defaultValue: 'message' },
+    ],
+    slots: [],
+    toTypeScript: (ctx, block) => {
+      const obj = ctx.getFieldValue(block, 'obj', 'api_result');
+      const field = ctx.getFieldValue(block, 'field', 'message');
+      return `(${obj} ? ${obj}['${field}'] : undefined)`;
+    },
+  },
+
+  api_webhook_send: {
+    opcode: 'api_webhook_send',
+    category: 'integrations',
+    shape: 'command',
+    label: '외부 웹훅(Webhook) 전송 [URL: {url}] [내용: {text}]',
+    description: '외부 서비스나 채널로 웹훅 알림 메시지를 전송합니다.',
+    color: '#06B6D4',
+    fields: [
+      { name: 'url', type: 'text', label: '웹훅 URL', defaultValue: 'https://discord.com/api/webhooks/...' },
+      { name: 'text', type: 'text', label: '전송 메시지', defaultValue: 'SnapBot 알림' },
+    ],
+    slots: [],
+    toTypeScript: (ctx, block) => {
+      const url = ctx.getFieldValue(block, 'url', '');
+      const text = ctx.getFieldValue(block, 'text', 'SnapBot 알림');
+      return ctx.indent(`await fetch('${url}', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: '${text}' }) });`);
+    },
+  },
+
+  api_openai_prompt: {
+    opcode: 'api_openai_prompt',
+    category: 'integrations',
+    shape: 'command',
+    label: 'OpenAI 인공지능에 질문 [프롬프트: {prompt}] [결과를 {var}에 저장]',
+    description: 'OpenAI LLM API를 호출하여 생성된 답변을 변수에 저장합니다.',
+    color: '#06B6D4',
+    fields: [
+      { name: 'prompt', type: 'text', label: '프롬프트', defaultValue: '간단한 인사말을 작성해줘' },
+      { name: 'var', type: 'variable', label: '저장 변수', defaultValue: 'ai_response' },
+    ],
+    slots: [],
+    toTypeScript: (ctx, block) => {
+      const prompt = ctx.getFieldValue(block, 'prompt', 'Hello');
+      const varName = ctx.getFieldValue(block, 'var', 'ai_response');
+      return ctx.indent(`const ${varName} = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': \`Bearer \${process.env.OPENAI_API_KEY}\` }, body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'user', content: '${prompt}' }] }) }).then(r => r.json()).then(data => data.choices?.[0]?.message?.content || '응답 없음');`);
+    },
+  },
+
+  api_weather_lookup: {
+    opcode: 'api_weather_lookup',
+    category: 'integrations',
+    shape: 'command',
+    label: '실시간 날씨 정보 조회 [도시: {city}] [결과를 {var}에 저장]',
+    description: '공개 날씨 API를 통해 특정 도시의 현재 기온과 날씨 정보를 가져옵니다.',
+    color: '#06B6D4',
+    fields: [
+      { name: 'city', type: 'text', label: '도시명', defaultValue: 'Seoul' },
+      { name: 'var', type: 'variable', label: '저장 변수', defaultValue: 'weather_data' },
+    ],
+    slots: [],
+    toTypeScript: (ctx, block) => {
+      const city = ctx.getFieldValue(block, 'city', 'Seoul');
+      const varName = ctx.getFieldValue(block, 'var', 'weather_data');
+      return ctx.indent(`const ${varName} = await fetch(\`https://wttr.in/${city}?format=j1\`).then(r => r.json());`);
+    },
+  },
+
+  hw_mqtt_publish: {
+    opcode: 'hw_mqtt_publish',
+    category: 'integrations',
+    shape: 'command',
+    label: 'MQTT IoT 토픽 발행 [토픽: {topic}] [페이로드: {msg}]',
+    description: '스마트홈 또는 IoT 디바이스 브로커로 MQTT 메시지를 전송합니다.',
+    color: '#06B6D4',
+    fields: [
+      { name: 'topic', type: 'text', label: '토픽', defaultValue: 'home/livingroom/light' },
+      { name: 'msg', type: 'text', label: '페이로드', defaultValue: 'ON' },
+    ],
+    slots: [],
+    toTypeScript: (ctx, block) => {
+      const topic = ctx.getFieldValue(block, 'topic', 'home/light');
+      const msg = ctx.getFieldValue(block, 'msg', 'ON');
+      return ctx.indent(`// MQTT Publish [${topic}]: ${msg}\nif (globalThis.mqttClient) { globalThis.mqttClient.publish('${topic}', '${msg}'); }`);
+    },
+  },
+
+  hw_mqtt_subscribe: {
+    opcode: 'hw_mqtt_subscribe',
+    category: 'integrations',
+    shape: 'hat',
+    label: 'MQTT 센서 데이터 도착 시 [토픽: {topic}]',
+    description: '아두이노, ESP32 등 IoT 하드웨어 센서에서 MQTT 데이터가 수신되었을 때 실행됩니다.',
+    color: '#06B6D4',
+    fields: [
+      { name: 'topic', type: 'text', label: '토픽', defaultValue: 'sensor/temperature' },
+    ],
+    slots: [{ name: 'statement', type: 'statement' }],
+    toTypeScript: (ctx, block) => {
+      const topic = ctx.getFieldValue(block, 'topic', 'sensor/temp');
+      const body = ctx.compileSequence(block.inputs['statement'] || block.next, ctx.depth + 1);
+      return `if (globalThis.mqttClient) {\n  globalThis.mqttClient.subscribe('${topic}');\n  globalThis.mqttClient.on('message', async (topic, message) => {\n    if (topic === '${topic}') {\n${body}\n    }\n  });\n}`;
+    },
+  },
+
+  hw_serial_send: {
+    opcode: 'hw_serial_send',
+    category: 'integrations',
+    shape: 'command',
+    label: '시리얼/UART 명령 전송 [포트: {port}] [명령어: {cmd}]',
+    description: 'USB 시리얼 포트로 연결된 아두이노나 라즈베리파이로 제어 명령을 보냅니다.',
+    color: '#06B6D4',
+    fields: [
+      { name: 'port', type: 'text', label: '시리얼 포트', defaultValue: '/dev/ttyUSB0' },
+      { name: 'cmd', type: 'text', label: '명령어', defaultValue: 'LED_ON\\n' },
+    ],
+    slots: [],
+    toTypeScript: (ctx, block) => {
+      const port = ctx.getFieldValue(block, 'port', '/dev/ttyUSB0');
+      const cmd = ctx.getFieldValue(block, 'cmd', 'LED_ON');
+      return ctx.indent(`// Serial UART Command [${port}]: ${cmd}\nif (globalThis.serialPort) { globalThis.serialPort.write('${cmd}\\n'); }`);
+    },
+  },
+
+  hw_gpio_set: {
+    opcode: 'hw_gpio_set',
+    category: 'integrations',
+    shape: 'command',
+    label: '라즈베리파이 GPIO 핀 제어 [핀 번호: {pin}] [상태: {state}]',
+    description: '라즈베리파이의 디지털 입출력(GPIO) 핀의 전압(HIGH/LOW)을 제어합니다.',
+    color: '#06B6D4',
+    fields: [
+      { name: 'pin', type: 'number', label: '핀 번호', defaultValue: 17 },
+      { name: 'state', type: 'dropdown', label: '상태', defaultValue: 'HIGH', options: [{ label: 'HIGH (1 / 켜기)', value: 'HIGH' }, { label: 'LOW (0 / 끄기)', value: 'LOW' }] },
+    ],
+    slots: [],
+    toTypeScript: (ctx, block) => {
+      const pin = ctx.getFieldValue(block, 'pin', '17');
+      const state = ctx.getFieldValue(block, 'state', 'HIGH');
+      return ctx.indent(`// GPIO Pin ${pin} -> ${state}\nif (globalThis.gpio) { globalThis.gpio.write(${pin}, ${state === 'HIGH' ? 1 : 0}); }`);
+    },
+  },
+
+  hw_webhook_trigger: {
+    opcode: 'hw_webhook_trigger',
+    category: 'integrations',
+    shape: 'command',
+    label: '스마트홈 / IoT 릴레이 스위치 작동 [엔드포인트: {endpoint}]',
+    description: 'Home Assistant나 스마트 플러그, 릴레이 모듈의 스위치 API를 트리거합니다.',
+    color: '#06B6D4',
+    fields: [
+      { name: 'endpoint', type: 'text', label: 'API 엔드포인트', defaultValue: 'http://192.168.1.100/relay/toggle' },
+    ],
+    slots: [],
+    toTypeScript: (ctx, block) => {
+      const endpoint = ctx.getFieldValue(block, 'endpoint', 'http://localhost/toggle');
+      return ctx.indent(`await fetch('${endpoint}', { method: 'POST' }).catch(err => console.error('IoT Relay Error:', err));`);
+    },
+  },
 };

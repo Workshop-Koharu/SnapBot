@@ -7,6 +7,7 @@
 // ==============================================================================
 
 import React, { useEffect, useRef } from 'react';
+import { useI18n } from '@/lib/i18n/context';
 import {
   Copy,
   Trash2,
@@ -54,6 +55,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onResetView,
   onClearAll,
 }) => {
+  const { t } = useI18n();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -100,7 +102,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           >
             <div className="flex items-center gap-2">
               <Copy className="w-3.5 h-3.5" />
-              <span>블록 복제</span>
+              <span>{t.contextMenu.duplicate}</span>
             </div>
             <span className="text-[10px] text-slate-400 group-hover:text-white">Ctrl+D</span>
           </button>
@@ -113,7 +115,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-left"
           >
             <Unlink className="w-3.5 h-3.5" />
-            <span>블록 분리</span>
+            <span>{t.contextMenu.detach}</span>
           </button>
 
           <button
@@ -124,7 +126,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-left"
           >
             <Code className="w-3.5 h-3.5" />
-            <span>생성 코드 복사</span>
+            <span>{t.contextMenu.copyCode}</span>
           </button>
 
           <div className="h-px bg-slate-800 my-1" />
@@ -138,7 +140,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           >
             <div className="flex items-center gap-2">
               <Trash2 className="w-3.5 h-3.5" />
-              <span>블록 삭제</span>
+              <span>{t.contextMenu.deleteBlock}</span>
             </div>
             <span className="text-[10px] opacity-70">Del</span>
           </button>
@@ -155,7 +157,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           >
             <div className="flex items-center gap-2">
               <Undo2 className="w-3.5 h-3.5" />
-              <span>실행 취소</span>
+              <span>{t.contextMenu.undo}</span>
             </div>
             <span className="text-[10px] text-slate-400">Ctrl+Z</span>
           </button>
@@ -169,7 +171,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           >
             <div className="flex items-center gap-2">
               <Redo2 className="w-3.5 h-3.5" />
-              <span>다시 실행</span>
+              <span>{t.contextMenu.redo}</span>
             </div>
             <span className="text-[10px] text-slate-400">Ctrl+Y</span>
           </button>
@@ -184,7 +186,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-left"
           >
             <LayoutGrid className="w-3.5 h-3.5" />
-            <span>블록 자동 정렬</span>
+            <span>{t.contextMenu.cleanUp}</span>
           </button>
 
           <button
@@ -195,7 +197,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-800 rounded-lg transition-colors text-left"
           >
             <Maximize2 className="w-3.5 h-3.5" />
-            <span>화면 맞춤 (100%)</span>
+            <span>{t.contextMenu.resetView}</span>
           </button>
 
           <div className="h-px bg-slate-800 my-1" />
@@ -208,7 +210,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             className="w-full flex items-center gap-2 px-3 py-2 hover:bg-rose-600 hover:text-white text-rose-400 rounded-lg transition-colors text-left"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>모든 블록 삭제</span>
+            <span>{t.contextMenu.clearAll}</span>
           </button>
         </div>
       )}

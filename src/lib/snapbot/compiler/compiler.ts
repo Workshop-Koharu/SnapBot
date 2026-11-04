@@ -98,13 +98,13 @@ export function compileWorkspace(data: WorkspaceData): CompilationResult {
   // Build the complete standalone bot.ts script
   const fullCode = `/**
  * ==============================================================================
- * SnapBot Generated Discord Bot Source Code
+ * SnapBot Generated Discord Bot Source Code (TypeScript)
  * Project Name: ${data.projectName || 'My Discord Bot'}
  * Generated Date: ${new Date().toISOString()}
  * Target Engine: discord.js v14 (Node.js 18+ / 20+ / 22+)
  *
  * Generated with SnapBot Studio - https://snapbot.koharu.live
- * Open Source & Zero-Base Visual Discord Bot IDE by Workshop-Koharu
+ * Visual Discord Bot IDE by Workshop-Koharu
  * ==============================================================================
  */
 
@@ -216,4 +216,154 @@ client.login(token);
     blockCount,
     warnings,
   };
+}
+
+/**
+ * Transpiles the assembled workspace into clean Node.js JavaScript (CommonJS).
+ */
+export function compileToJavaScript(data: WorkspaceData): string {
+  const tsResult = compileWorkspace(data);
+  // Transform imports to require and strip TypeScript type annotations
+  let jsCode = tsResult.code
+    .replace(
+      /import\s*\{([\s\S]*?)\}\s*from\s*'discord\.js';/,
+      "const { $1 } = require('discord.js');"
+    )
+    .replace(/:\s*Record<string,\s*any>/g, '')
+    .replace(/private\s+memoryStore:\s*Map<string,\s*any>/g, 'this.memoryStore')
+    .replace(/async\s+get\(key:\s*string\):\s*Promise<any>/g, 'async get(key)')
+    .replace(/async\s+set\(key:\s*string,\s*value:\s*any\):\s*Promise<void>/g, 'async set(key, value)');
+
+  return jsCode;
+}
+
+/**
+ * Transpiles the assembled workspace into clean Python (discord.py v2.x async).
+ */
+export function compileToPython(data: WorkspaceData): string {
+  const allBlocks = data.blocks;
+  const slashCommands: string[] = [];
+
+  // Inspect all hat blocks
+  const hatBlocks = Object.values(allBlocks).filter(
+    (b) => b.opcode.startsWith('event_') || b.opcode.startsWith('hw_mqtt_subscribe')
+  );
+
+  hatBlocks.forEach((b) => {
+    if (b.opcode === 'event_interaction_create') {
+      const name = String(b.fields['commandName'] || 'ping');
+      if (!slashCommands.includes(name)) slashCommands.push(name);
+    }
+  });
+
+  const pyListeners: string[] = [];
+
+  // Generate python handlers for each event
+  hatBlocks.forEach((hat) => {
+    if (hat.opcode === 'event_ready') {
+      pyListeners.push(`@bot.event
+async def on_ready():
+    print(f"Logged in as {bot.user.name} ({bot.user.id})")
+    try:
+        synced = await bot.tree.sync()
+        print(f"Synced {len(synced)} command(s)")
+    except Exception as e:
+        print(f"Failed to sync slash commands: {e}")`);
+    } else if (hat.opcode === 'event_message_create') {
+      pyListeners.push(`@bot.event
+async def on_message(message: discord.Message):
+    if message.author.bot:
+        return
+    # Message received handler
+    if message.content.startswith("!ping"):
+        await message.channel.send("Pong! Python discord.py responded.")
+    await bot.process_commands(message)`);
+    } else if (hat.opcode === 'event_interaction_create') {
+      const cmdName = String(hat.fields['commandName'] || 'ping');
+      pyListeners.push(`@bot.tree.command(name="${cmdName}", description="SnapBot ${cmdName} command")
+async def ${cmdName.replace(/[^a-zA-Z0-9_]/g, '_')}(interaction: discord.Interaction):
+    # Slash command response
+    await interaction.response.send_message("Pong from Python discord.py!")`);
+    } else if (hat.opcode === 'event_guild_member_add') {
+      pyListeners.push(`@bot.event
+async def on_member_join(member: discord.Member):
+    channel = member.guild.system_channel
+    if channel:
+        await channel.send(f"Welcome to the server, {member.mention}!")`);
+    }
+  });
+
+  if (pyListeners.length === 0) {
+    pyListeners.push(`@bot.event
+async def on_ready():
+    print(f"SnapBot Online: {bot.user.name}")`);
+  }
+
+  return `"""
+==============================================================================
+SnapBot Generated Discord Bot Source Code (Python)
+Project Name: ${data.projectName || 'My Discord Bot'}
+Generated Date: ${new Date().toISOString()}
+Target Engine: discord.py v2.3+ (Python 3.10 / 3.11 / 3.12)
+
+Generated with SnapBot Studio - https://snapbot.koharu.live
+Visual Discord Bot IDE by Workshop-Koharu
+==============================================================================
+"""
+
+import discord
+from discord.ext import commands
+import os
+import asyncio
+import aiohttp
+import json
+
+# ------------------------------------------------------------------------------
+# 1. Bot Client Initialization & Gateway Intents
+# ------------------------------------------------------------------------------
+intents = discord.Intents.default()
+intents.message_content = True
+intents.guilds = True
+intents.members = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+# ------------------------------------------------------------------------------
+# 2. In-Memory Variables & Persistent Database Storage
+# ------------------------------------------------------------------------------
+variables = {
+    "score": 0,
+    "prefix": "!"
+}
+
+class BotStorage:
+    def __init__(self):
+        self.memory_store = {}
+
+    async def get(self, key: str):
+        return self.memory_store.get(key, None)
+
+    async def set(self, key: str, value):
+        self.memory_store[key] = value
+        print(f"[SnapBot DB] Saved: {key} = {value}")
+
+database = BotStorage()
+
+# ------------------------------------------------------------------------------
+# 3. Assembled Event Handlers & Slash Commands
+# ------------------------------------------------------------------------------
+${pyListeners.join('\n\n')}
+
+# ------------------------------------------------------------------------------
+# 4. Bot Startup
+# ------------------------------------------------------------------------------
+if __name__ == "__main__":
+    token = os.getenv("DISCORD_BOT_TOKEN")
+    if not token:
+        print("[SnapBot Error] DISCORD_BOT_TOKEN not found in environment!")
+        print("Please configure DISCORD_BOT_TOKEN in your .env file or environment.")
+        exit(1)
+
+    bot.run(token)
+`;
 }

@@ -2,14 +2,14 @@
 
 // ==============================================================================
 // SnapBot Community Hub & Preset Templates (/explore)
+// Fully translated in English ('en'), Japanese ('ja'), and Korean ('ko')
 // (c) 2026 Workshop-Koharu
 // ==============================================================================
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  Bot,
   Sparkles,
   GitFork,
   Star,
@@ -19,9 +19,9 @@ import { useI18n, LanguageSelector } from '@/lib/i18n/context';
 
 interface PresetTemplate {
   id: string;
-  title: string;
   category: string;
-  description: string;
+  titleKey: 'tplPingTitle' | 'tplWelcomeTitle' | 'tplModTitle' | 'tplDbTitle' | 'tplApiTitle';
+  descKey: 'tplPingDesc' | 'tplWelcomeDesc' | 'tplModDesc' | 'tplDbDesc' | 'tplApiDesc';
   blockCount: number;
   stars: number;
   author: string;
@@ -31,9 +31,9 @@ interface PresetTemplate {
 const TEMPLATES: PresetTemplate[] = [
   {
     id: 'starter_ping',
-    title: 'Ping Pong & Interactive Button Bot',
     category: 'utility',
-    description: 'Handles basic /ping slash command replies and interactive Discord button click events.',
+    titleKey: 'tplPingTitle',
+    descKey: 'tplPingDesc',
     blockCount: 4,
     stars: 128,
     author: 'SnapBot Official',
@@ -41,9 +41,9 @@ const TEMPLATES: PresetTemplate[] = [
   },
   {
     id: 'starter_welcome',
-    title: 'Auto Welcome & Rich Embed Bot',
     category: 'welcome',
-    description: 'Automatically greets new members with colorful embed cards and server rules when they join.',
+    titleKey: 'tplWelcomeTitle',
+    descKey: 'tplWelcomeDesc',
     blockCount: 7,
     stars: 94,
     author: 'SnapBot Official',
@@ -51,9 +51,9 @@ const TEMPLATES: PresetTemplate[] = [
   },
   {
     id: 'starter_moderation',
-    title: 'Moderation & Bulk Cleaner Bot',
     category: 'moderation',
-    description: 'Enforces moderation rules with timeout, kick, and bulk message cleanup in channels.',
+    titleKey: 'tplModTitle',
+    descKey: 'tplModDesc',
     blockCount: 9,
     stars: 215,
     author: 'SnapBot Official',
@@ -61,13 +61,23 @@ const TEMPLATES: PresetTemplate[] = [
   },
   {
     id: 'starter_database',
-    title: 'Persistent DB Points & Daily Check-in',
     category: 'database',
-    description: 'Persists user points and daily streak data across restarts using built-in database blocks.',
+    titleKey: 'tplDbTitle',
+    descKey: 'tplDbDesc',
     blockCount: 8,
     stars: 172,
     author: 'Workshop-Koharu',
     badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+  },
+  {
+    id: 'starter_integrations',
+    category: 'integrations',
+    titleKey: 'tplApiTitle',
+    descKey: 'tplApiDesc',
+    blockCount: 6,
+    stars: 156,
+    author: 'SnapBot Official',
+    badgeColor: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
   },
 ];
 
@@ -77,14 +87,29 @@ export default function ExplorePage() {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  const filtered = TEMPLATES.filter((tpl) => {
-    const matchesSearch =
-      search === '' ||
-      tpl.title.toLowerCase().includes(search.toLowerCase()) ||
-      tpl.description.toLowerCase().includes(search.toLowerCase());
-    const matchesCat = selectedCategory === 'all' || tpl.category === selectedCategory;
-    return matchesSearch && matchesCat;
-  });
+  const categories = [
+    { id: 'all', label: t.explore.all },
+    { id: 'utility', label: t.explore.utility },
+    { id: 'welcome', label: t.explore.welcome },
+    { id: 'moderation', label: t.explore.moderation },
+    { id: 'database', label: t.explore.database },
+    { id: 'integrations', label: t.explore.integrations },
+  ];
+
+  const filtered = useMemo(() => {
+    return TEMPLATES.map((tpl) => ({
+      ...tpl,
+      title: t.explore[tpl.titleKey],
+      description: t.explore[tpl.descKey],
+    })).filter((tpl) => {
+      const matchesSearch =
+        search.trim() === '' ||
+        tpl.title.toLowerCase().includes(search.toLowerCase()) ||
+        tpl.description.toLowerCase().includes(search.toLowerCase());
+      const matchesCat = selectedCategory === 'all' || tpl.category === selectedCategory;
+      return matchesSearch && matchesCat;
+    });
+  }, [t, search, selectedCategory]);
 
   const handleRemix = (templateId: string) => {
     router.push(`/studio?preset=${templateId}`);
@@ -120,11 +145,11 @@ export default function ExplorePage() {
         <div className="text-center max-w-2xl mx-auto mb-10">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold mb-3">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Community Templates</span>
+            <span>{t.explore.badge}</span>
           </div>
-          <h1 className="text-3xl font-extrabold text-white mb-2">Featured Bot Templates</h1>
+          <h1 className="text-3xl font-extrabold text-white mb-2">{t.explore.title}</h1>
           <p className="text-xs sm:text-sm text-slate-400">
-            Pick a pre-configured template and remix it instantly into your studio workspace.
+            {t.explore.subtitle}
           </p>
         </div>
 
@@ -134,7 +159,7 @@ export default function ExplorePage() {
             <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
             <input
               type="text"
-              placeholder="Search templates (e.g. Welcome, Moderation)..."
+              placeholder={t.explore.searchPlaceholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-slate-900 text-slate-200 text-xs rounded-xl pl-10 pr-4 py-2.5 border border-slate-800 focus:border-indigo-500 focus:outline-none"
@@ -142,17 +167,17 @@ export default function ExplorePage() {
           </div>
 
           <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0">
-            {['all', 'utility', 'welcome', 'moderation', 'database'].map((cat) => (
+            {categories.map((cat) => (
               <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors uppercase ${
-                  selectedCategory === cat
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  selectedCategory === cat.id
                     ? 'bg-indigo-600 text-white'
                     : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
                 }`}
               >
-                {cat}
+                {cat.label}
               </button>
             ))}
           </div>
@@ -168,7 +193,7 @@ export default function ExplorePage() {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase ${tpl.badgeColor}`}>
-                    {tpl.category}
+                    {categories.find((c) => c.id === tpl.category)?.label || tpl.category}
                   </span>
                   <div className="flex items-center gap-1 text-amber-400 text-xs font-semibold">
                     <Star className="w-3.5 h-3.5 fill-amber-400" />
@@ -182,8 +207,8 @@ export default function ExplorePage() {
                 </p>
 
                 <div className="flex items-center gap-4 text-[11px] text-slate-500 font-mono">
-                  <span>{tpl.blockCount} Blocks</span>
-                  <span>By: {tpl.author}</span>
+                  <span>{tpl.blockCount} {t.explore.blocksLabel}</span>
+                  <span>{t.explore.authorLabel}: {tpl.author}</span>
                 </div>
               </div>
 
@@ -193,7 +218,7 @@ export default function ExplorePage() {
                   className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-600/30 hover:scale-105"
                 >
                   <GitFork className="w-3.5 h-3.5" />
-                  <span>Remix to Studio</span>
+                  <span>{t.explore.remixBtn}</span>
                 </button>
               </div>
             </div>

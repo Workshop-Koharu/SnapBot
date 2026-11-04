@@ -22,6 +22,7 @@ import {
   ShieldAlert,
   Database,
   Search,
+  Cpu,
 } from 'lucide-react';
 
 interface PaletteProps {
@@ -39,6 +40,7 @@ const CATEGORY_ICONS: Record<string, React.FC<{ className?: string }>> = {
   Info,
   ShieldAlert,
   Database,
+  Cpu,
 };
 
 export const Palette: React.FC<PaletteProps> = ({ onAddBlock, className = '' }) => {

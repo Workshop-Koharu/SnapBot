@@ -15,7 +15,8 @@ export type BlockCategory =
   | 'variables'
   | 'discord_data'
   | 'moderation'
-  | 'database';
+  | 'database'
+  | 'integrations';
 
 export type FieldInputType =
   | 'text'
@@ -193,5 +194,13 @@ export const CATEGORY_DEFINITIONS: Record<BlockCategory, CategoryMeta> = {
     bgClass: 'bg-pink-500',
     iconName: 'Database',
     description: '봇 재부팅 후에도 유지되는 키-값 영구 데이터베이스 저장 및 조회',
+  },
+  integrations: {
+    id: 'integrations',
+    name: 'API & 하드웨어 (IoT)',
+    color: '#06B6D4',
+    bgClass: 'bg-cyan-500',
+    iconName: 'Cpu',
+    description: '외부 REST API 호출, Webhook 발송, OpenAI AI 모델, MQTT / Serial / IoT 하드웨어 연동',
   },
 };

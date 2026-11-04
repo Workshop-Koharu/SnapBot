@@ -67,6 +67,15 @@ export interface Translations {
     mobileCanvas: string;
     mobileSimulator: string;
     mobileCode: string;
+    exportLanguage: string;
+    exportTypeScript: string;
+    exportJavaScript: string;
+    exportPython: string;
+    downloadFile: string;
+    authRequiredTitle: string;
+    authRequiredDesc: string;
+    loginToContinue: string;
+    registerToContinue: string;
   };
   // Categories
   categories: {
@@ -79,6 +88,7 @@ export interface Translations {
     discord_data: string;
     moderation: string;
     database: string;
+    integrations: string;
   };
   // Context Menu
   contextMenu: {
@@ -104,6 +114,54 @@ export interface Translations {
     inputPlaceholder: string;
     tipSlash: string;
     fillPing: string;
+    channelsTitle: string;
+    textChannels: string;
+    voiceChannels: string;
+    announcementChannels: string;
+    forumChannels: string;
+    addChannelBtn: string;
+    channelNamePlaceholder: string;
+    channelTypeLabel: string;
+    voiceConnected: string;
+    voiceDisconnected: string;
+    joinVoice: string;
+    leaveVoice: string;
+    muteMic: string;
+    unmuteMic: string;
+    deafen: string;
+    undeafen: string;
+    voiceLocalOnlyNotice: string;
+    newForumPost: string;
+    postTitlePlaceholder: string;
+    postContentPlaceholder: string;
+    createPost: string;
+    forumEmpty: string;
+  };
+  // Explore / Templates
+  explore: {
+    badge: string;
+    title: string;
+    subtitle: string;
+    searchPlaceholder: string;
+    all: string;
+    utility: string;
+    welcome: string;
+    moderation: string;
+    database: string;
+    integrations: string;
+    remixBtn: string;
+    blocksLabel: string;
+    authorLabel: string;
+    tplPingTitle: string;
+    tplPingDesc: string;
+    tplWelcomeTitle: string;
+    tplWelcomeDesc: string;
+    tplModTitle: string;
+    tplModDesc: string;
+    tplDbTitle: string;
+    tplDbDesc: string;
+    tplApiTitle: string;
+    tplApiDesc: string;
   };
   // Dashboard
   dashboard: {
@@ -130,6 +188,20 @@ export interface Translations {
     acceptAll: string;
     decline: string;
     learnMore: string;
+    manageSettings: string;
+    settingsTitle: string;
+    settingsDesc: string;
+    savePreferences: string;
+    rejectOptional: string;
+    essentialTitle: string;
+    essentialDesc: string;
+    functionalTitle: string;
+    functionalDesc: string;
+    analyticsTitle: string;
+    analyticsDesc: string;
+    marketingTitle: string;
+    marketingDesc: string;
+    alwaysActive: string;
   };
   // Legal & Footer
   footer: {
@@ -201,6 +273,15 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       mobileCanvas: 'Canvas',
       mobileSimulator: 'Simulator',
       mobileCode: 'Code',
+      exportLanguage: 'Target Language',
+      exportTypeScript: 'TypeScript (discord.js)',
+      exportJavaScript: 'JavaScript (Node.js)',
+      exportPython: 'Python (discord.py)',
+      downloadFile: 'Download Code',
+      authRequiredTitle: 'Sign In Required',
+      authRequiredDesc: 'Please sign in or create an account to access the Block Studio IDE.',
+      loginToContinue: 'Sign In',
+      registerToContinue: 'Sign Up',
     },
     categories: {
       events: 'Events',
@@ -212,6 +293,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       discord_data: 'Discord Info',
       moderation: 'Moderation & Security',
       database: 'Persistent DB',
+      integrations: 'API & Hardware',
     },
     contextMenu: {
       duplicate: 'Duplicate Block',
@@ -235,6 +317,53 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       inputPlaceholder: 'Message #general or type /ping...',
       tipSlash: 'Tip: Execute slash commands using /commandName',
       fillPing: 'Try /ping',
+      channelsTitle: 'CHANNELS',
+      textChannels: 'TEXT CHANNELS',
+      voiceChannels: 'VOICE CHANNELS',
+      announcementChannels: 'ANNOUNCEMENTS',
+      forumChannels: 'FORUMS',
+      addChannelBtn: 'Add Channel',
+      channelNamePlaceholder: 'channel-name',
+      channelTypeLabel: 'Channel Type',
+      voiceConnected: 'Voice Connected',
+      voiceDisconnected: 'Voice Disconnected',
+      joinVoice: 'Join Voice',
+      leaveVoice: 'Disconnect',
+      muteMic: 'Mute',
+      unmuteMic: 'Unmute',
+      deafen: 'Deafen',
+      undeafen: 'Undeafen',
+      voiceLocalOnlyNotice: 'Voice status is simulated locally in browser and never sent to any server.',
+      newForumPost: 'New Forum Post',
+      postTitlePlaceholder: 'Post Title',
+      postContentPlaceholder: 'Write your post here...',
+      createPost: 'Publish Post',
+      forumEmpty: 'No forum posts yet. Create the first discussion thread!',
+    },
+    explore: {
+      badge: 'Bot Template Gallery',
+      title: 'Featured Discord Bot Templates',
+      subtitle: 'Pick a pre-configured template and remix it instantly into your studio workspace.',
+      searchPlaceholder: 'Search templates (e.g. Welcome, Moderation, API)...',
+      all: 'All',
+      utility: 'Utility',
+      welcome: 'Welcome',
+      moderation: 'Moderation',
+      database: 'Database',
+      integrations: 'API & Hardware',
+      remixBtn: 'Remix to Studio',
+      blocksLabel: 'blocks',
+      authorLabel: 'Author',
+      tplPingTitle: 'Ping Pong & Interactive Button Bot',
+      tplPingDesc: 'Handles basic /ping slash command replies and interactive Discord button click events.',
+      tplWelcomeTitle: 'Auto Welcome & Rich Embed Bot',
+      tplWelcomeDesc: 'Automatically greets new members with colorful embed cards and server rules when they join.',
+      tplModTitle: 'Moderation & Bulk Cleaner Bot',
+      tplModDesc: 'Enforces moderation rules with timeout, kick, and bulk message cleanup in channels.',
+      tplDbTitle: 'Persistent DB Points & Daily Streak',
+      tplDbDesc: 'Persists user points and daily streak data across restarts using built-in database blocks.',
+      tplApiTitle: 'OpenAI & Weather REST API Bot',
+      tplApiDesc: 'Calls external AI endpoints and weather APIs to respond with live data in Discord.',
     },
     dashboard: {
       title: 'Discord Bot Projects',
@@ -260,6 +389,20 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       acceptAll: 'Accept All',
       decline: 'Essential Only',
       learnMore: 'Cookie Policy',
+      manageSettings: 'Cookie Settings',
+      settingsTitle: 'Privacy & Cookie Preferences',
+      settingsDesc: 'Configure which cookies you allow us to store on your device.',
+      savePreferences: 'Save Preferences',
+      rejectOptional: 'Reject Optional',
+      essentialTitle: 'Strictly Necessary Cookies',
+      essentialDesc: 'Required for core authentication, security, and project storage. Cannot be disabled.',
+      functionalTitle: 'Functional & Preferences',
+      functionalDesc: 'Remembers your language choice, active layout tabs, and editor preferences.',
+      analyticsTitle: 'Performance & Diagnostics',
+      analyticsDesc: 'Helps us measure compilation performance and diagnose unexpected editor errors.',
+      marketingTitle: 'Integration & External APIs',
+      marketingDesc: 'Enables external webhook previews and third-party API test fixtures.',
+      alwaysActive: 'Always Active',
     },
     footer: {
       privacy: 'Privacy Policy',
@@ -329,6 +472,15 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       mobileCanvas: 'キャンバス',
       mobileSimulator: 'シミュレータ',
       mobileCode: 'コード',
+      exportLanguage: '対象言語',
+      exportTypeScript: 'TypeScript (discord.js)',
+      exportJavaScript: 'JavaScript (Node.js)',
+      exportPython: 'Python (discord.py)',
+      downloadFile: 'コード単体保存',
+      authRequiredTitle: 'ログインが必要です',
+      authRequiredDesc: 'ブロックスタジオを利用するにはログインまたは新規登録を行ってください。',
+      loginToContinue: 'ログイン',
+      registerToContinue: '新規登録',
     },
     categories: {
       events: 'イベント',
@@ -340,6 +492,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       discord_data: 'Discord情報',
       moderation: 'サーバー管理 & セキュリティ',
       database: '永続DBストレージ',
+      integrations: 'API & ハードウェア',
     },
     contextMenu: {
       duplicate: 'ブロックを複製',
@@ -363,6 +516,53 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       inputPlaceholder: '#general にメッセージ送信または /ping 入力...',
       tipSlash: 'ヒント: スラッシュコマンドは /コマンド名 で実行できます。',
       fillPing: '/ping を試す',
+      channelsTitle: 'チャンネル一覧',
+      textChannels: 'テキストチャンネル',
+      voiceChannels: 'ボイスチャンネル',
+      announcementChannels: 'アナウンスチャンネル',
+      forumChannels: 'フォーラムチャンネル',
+      addChannelBtn: 'チャンネル追加',
+      channelNamePlaceholder: 'チャンネル名',
+      channelTypeLabel: 'チャンネルの種類',
+      voiceConnected: 'ボイス接続中',
+      voiceDisconnected: 'ボイス未接続',
+      joinVoice: 'ボイス接続',
+      leaveVoice: '接続切断',
+      muteMic: 'ミュート',
+      unmuteMic: 'ミュート解除',
+      deafen: 'スピーカーOFF',
+      undeafen: 'スピーカーON',
+      voiceLocalOnlyNotice: 'ボイス接続はブラウザ内でローカルシミュレートされ、サーバーには送信されません。',
+      newForumPost: '新規投稿',
+      postTitlePlaceholder: '投稿のタイトル',
+      postContentPlaceholder: '投稿内容を入力...',
+      createPost: '投稿を作成',
+      forumEmpty: 'フォーラムの投稿はまだありません。最初のスレッドを作成しましょう！',
+    },
+    explore: {
+      badge: 'Botテンプレートギャラリー',
+      title: '公式Discord Botテンプレート',
+      subtitle: '設定済みテンプレートを選んで、ワンクリックでスタジオへリミックス(Remix)できます。',
+      searchPlaceholder: 'テンプレート検索 (例: 歓迎, 管理, API)...',
+      all: 'すべて',
+      utility: '便利機能',
+      welcome: '自動歓迎',
+      moderation: 'サーバー管理',
+      database: 'データベース',
+      integrations: 'API & ハードウェア',
+      remixBtn: 'スタジオへリミックス',
+      blocksLabel: '個のブロック',
+      authorLabel: '作成者',
+      tplPingTitle: 'ピンポン & インタラクティブボタンBot',
+      tplPingDesc: '基本的な /ping スラッシュコマンドとクリック可能なDiscordボタンイベントを処理します。',
+      tplWelcomeTitle: '自動歓迎 & リッチEmbed案内Bot',
+      tplWelcomeDesc: '新しいメンバーが参加した際、カラーEmbedカードとサーバー規約を自動案内します。',
+      tplModTitle: 'モデレーション & 一括削除自動Bot',
+      tplModDesc: 'タイムアウト、追放(Kick)、チャンネル内のメッセージ一括削除を実行します。',
+      tplDbTitle: '永続DBポイント & デイリーログインBot',
+      tplDbDesc: '内蔵データベースブロックを活用し、再起動後もユーザーのポイントと記録を保持します。',
+      tplApiTitle: 'OpenAI & 天気予報 REST API Bot',
+      tplApiDesc: '外部AIエンドポイントや天気APIを呼び出し、リアルタイムな情報をDiscordへ送信します。',
     },
     dashboard: {
       title: 'Discord Bot プロジェクト',
@@ -388,6 +588,20 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       acceptAll: 'すべて同意',
       decline: '必須のみ',
       learnMore: 'Cookieポリシー',
+      manageSettings: 'Cookie設定',
+      settingsTitle: 'プライバシー & Cookie設定',
+      settingsDesc: '端末に保存を許可するCookieの種類を選択してください。',
+      savePreferences: '設定を保存',
+      rejectOptional: '任意のCookieを拒否',
+      essentialTitle: '必須Cookie',
+      essentialDesc: 'ログイン認証、セッション維持、セキュリティに不可欠です。無効化できません。',
+      functionalTitle: '機能 & 設定Cookie',
+      functionalDesc: '選択した言語やUIレイアウト設定を記憶します。',
+      analyticsTitle: 'パフォーマンス & 診断',
+      analyticsDesc: 'コードコンパイルの処理時間や予期しないエラーの診断に役立てられます。',
+      marketingTitle: '外部連携 & API',
+      marketingDesc: 'Webhook連携や外部APIテスト機能の利用を円滑にします。',
+      alwaysActive: '常に有効',
     },
     footer: {
       privacy: 'プライバシーポリシー',
@@ -457,6 +671,15 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       mobileCanvas: '캔버스',
       mobileSimulator: '시뮬레이터',
       mobileCode: '코드',
+      exportLanguage: '대상 언어',
+      exportTypeScript: 'TypeScript (discord.js)',
+      exportJavaScript: 'JavaScript (Node.js)',
+      exportPython: 'Python (discord.py)',
+      downloadFile: '코드 단일 파일 저장',
+      authRequiredTitle: '로그인이 필요합니다',
+      authRequiredDesc: '블록 스튜디오를 사용하시려면 로그인 또는 무료 회원가입을 완료해 주세요.',
+      loginToContinue: '로그인',
+      registerToContinue: '회원가입',
     },
     categories: {
       events: '이벤트',
@@ -468,6 +691,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       discord_data: '디스코드 정보',
       moderation: '서버 관리 & 보안',
       database: '영구 DB 저장소',
+      integrations: 'API & 하드웨어',
     },
     contextMenu: {
       duplicate: '블록 복제',
@@ -491,6 +715,53 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       inputPlaceholder: '#general 에 메시지 전송 또는 /ping 입력...',
       tipSlash: '팁: 슬래시 명령어는 /명령어이름 형태로 입력하세요.',
       fillPing: '/ping 테스트 채우기',
+      channelsTitle: '채널 목록',
+      textChannels: '채팅 채널',
+      voiceChannels: '음성 채널',
+      announcementChannels: '공지 채널',
+      forumChannels: '포럼 채널',
+      addChannelBtn: '채널 추가',
+      channelNamePlaceholder: '채널 이름',
+      channelTypeLabel: '채널 유형',
+      voiceConnected: '음성 통화 연결됨',
+      voiceDisconnected: '음성 통화 종료됨',
+      joinVoice: '음성 연결',
+      leaveVoice: '연결 끊기',
+      muteMic: '마이크 끄기',
+      unmuteMic: '마이크 켜기',
+      deafen: '스피커 끄기',
+      undeafen: '스피커 켜기',
+      voiceLocalOnlyNotice: '음성 채널 상태는 브라우저 로컬 스토리지에만 저장되며 외부 서버로 절대 전송되지 않습니다.',
+      newForumPost: '새 포럼 글 작성',
+      postTitlePlaceholder: '게시글 제목',
+      postContentPlaceholder: '토론 또는 질문 내용을 작성하세요...',
+      createPost: '게시글 등록',
+      forumEmpty: '아직 포럼 게시글이 없습니다. 첫 번째 토론 글을 작성해 보세요!',
+    },
+    explore: {
+      badge: '봇 템플릿 갤러리',
+      title: '공식 디스코드 봇 템플릿',
+      subtitle: '검증된 블록 조합 템플릿을 선택하여 내 스튜디오로 원클릭 리믹스(Remix)하세요.',
+      searchPlaceholder: '템플릿 검색 (예: 환영, 관리, API, DB)...',
+      all: '전체',
+      utility: '편의 기능',
+      welcome: '자동 환영',
+      moderation: '서버 관리',
+      database: '데이터베이스',
+      integrations: 'API & 하드웨어',
+      remixBtn: '내 작업실로 리믹스 (Remix)',
+      blocksLabel: '개 블록',
+      authorLabel: '제작자',
+      tplPingTitle: '핑퐁 & 인터랙티브 버튼 봇',
+      tplPingDesc: '기본적인 /ping 슬래시 명령어 응답과 클릭 가능한 디스코드 버튼 이벤트를 처리하는 입문용 봇입니다.',
+      tplWelcomeTitle: '서버 자동 환영 & 임베드 안내 봇',
+      tplWelcomeDesc: '새로운 멤버가 디스코드 서버에 입장했을 때 아름다운 컬러 임베드 카드와 서버 규칙을 자동으로 안내합니다.',
+      tplModTitle: '서버 관리 & 일괄 청소 자동 봇',
+      tplModDesc: '명령어로 유저 타임아웃, 추방(Kick)을 실행하고 채팅 채널의 이전 메시지를 일괄 삭제(Bulk Delete)합니다.',
+      tplDbTitle: '영구 DB 포인트 & 출석체크 봇',
+      tplDbDesc: '영구 데이터베이스 블록을 활용하여 유저별 점수 및 출석 데이터를 재부팅 후에도 영구 저장하고 조회합니다.',
+      tplApiTitle: 'OpenAI & 날씨 REST API 연동 봇',
+      tplApiDesc: '외부 날씨 및 인공지능 API 엔드포인트를 호출하여 실시간 정보를 디스코드 채팅방에 전송합니다.',
     },
     dashboard: {
       title: '디스코드 봇 프로젝트',
@@ -516,6 +787,20 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       acceptAll: '모두 동의',
       decline: '필수만 허용',
       learnMore: '쿠키 정책',
+      manageSettings: '쿠키 설정',
+      settingsTitle: '개인정보 및 쿠키 설정',
+      settingsDesc: '브라우저 기기에 저장되는 쿠키의 범위를 직접 구성하실 수 있습니다.',
+      savePreferences: '설정 저장',
+      rejectOptional: '선택 쿠키 거부',
+      essentialTitle: '필수 쿠키 (Strictly Necessary)',
+      essentialDesc: '회원 인증 세션, 사이트 보안 및 봇 프로젝트 저장에 필수적이며 비활성화할 수 없습니다.',
+      functionalTitle: '기능 및 개인화 쿠키',
+      functionalDesc: '선택하신 언어 설정, 스튜디오 레이아웃 및 환경 설정을 브라우저에 기억합니다.',
+      analyticsTitle: '성능 및 진단 쿠키',
+      analyticsDesc: '블록 코드 컴파일 성능을 측정하고 예기치 못한 에러를 진단하는 데 활용됩니다.',
+      marketingTitle: '외부 연동 및 하드웨어 API',
+      marketingDesc: '외부 웹훅 및 IoT 장치와의 안전한 데이터 교환을 보조합니다.',
+      alwaysActive: '항상 활성',
     },
     footer: {
       privacy: '개인정보 처리방침',
