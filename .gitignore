@@ -40,3 +40,7 @@ next-env.d.ts
 # prisma generated binaries
 prisma/*.db
 
+# snapbot persistent cache
+.snapbot-data/
+
+

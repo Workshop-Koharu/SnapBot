@@ -1,26 +1,45 @@
 'use client';
 
 // ==============================================================================
-// SnapBot User Login Page
+// SnapBot User Login Page (/login)
+// Supports Email/Password, Google OAuth, and Seamless OTP Login
 // (c) 2026 Workshop-Koharu (MIT License)
 // ==============================================================================
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Bot, Mail, Lock, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Mail, Lock, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useI18n, LanguageSelector } from '@/lib/i18n/context';
+import { sounds } from '@/lib/audio/sounds';
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { lang } = useI18n();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  // Read URL query errors (e.g. from Google OAuth callback)
+  useEffect(() => {
+    const err = searchParams.get('error');
+    if (err === 'google_auth_failed') {
+      setErrorMsg(lang === 'ko' ? 'Google 로그인 인증이 취소되었거나 실패했습니다.' : 'Google sign-in was canceled or failed.');
+    } else if (err === 'token_exchange_failed' || err === 'profile_fetch_failed') {
+      setErrorMsg(lang === 'ko' ? 'Google 프로필 정보를 가져오지 못했습니다. 다시 시도해 주세요.' : 'Failed to retrieve Google profile. Please try again.');
+    } else if (err === 'unknown_oauth_error') {
+      setErrorMsg(lang === 'ko' ? '소셜 로그인 중 문제가 발생했습니다.' : 'An error occurred during social login.');
+    }
+  }, [searchParams, lang]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setLoading(true);
+    sounds.play('click');
 
     try {
       const res = await fetch('/api/auth/login', {
@@ -32,12 +51,15 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) {
         if (data.needsVerification) {
-          router.push(`/register?email=${encodeURIComponent(email)}`);
+          sounds.play('snap');
+          router.push(`/verify-otp?email=${encodeURIComponent(email)}`);
           return;
         }
-        throw new Error(data.error || '로그인에 실패했습니다.');
+        sounds.play('delete');
+        throw new Error(data.error || (lang === 'ko' ? '로그인에 실패했습니다.' : 'Login failed.'));
       }
 
+      sounds.play('success');
       router.push('/dashboard');
     } catch (err: any) {
       setErrorMsg(err.message);
@@ -46,21 +68,47 @@ export default function LoginPage() {
     }
   };
 
+  const text = {
+    title: lang === 'ko' ? '로그인' : lang === 'ja' ? 'ログイン' : 'Sign In',
+    subtitle:
+      lang === 'ko'
+        ? 'SnapBot 계정으로 로그인하여 봇 프로젝트를 관리하세요.'
+        : lang === 'ja'
+        ? 'SnapBotアカウントにログインしてボットプロジェクトを管理します。'
+        : 'Sign in to your SnapBot account to manage your bot projects.',
+    emailLabel: lang === 'ko' ? '이메일 주소' : lang === 'ja' ? 'メールアドレス' : 'Email Address',
+    passwordLabel: lang === 'ko' ? '비밀번호' : lang === 'ja' ? 'パスワード' : 'Password',
+    submitBtn: lang === 'ko' ? '로그인' : lang === 'ja' ? 'ログイン' : 'Sign In',
+    submitting: lang === 'ko' ? '로그인 중...' : lang === 'ja' ? 'ログイン中...' : 'Signing In...',
+    or: lang === 'ko' ? '또는' : lang === 'ja' ? 'または' : 'OR',
+    googleBtn:
+      lang === 'ko'
+        ? 'Google 계정으로 계속하기'
+        : lang === 'ja'
+        ? 'Googleで続ける'
+        : 'Continue with Google',
+    noAccount: lang === 'ko' ? '아직 계정이 없으신가요?' : lang === 'ja' ? 'アカウントをお持ちではありませんか？' : "Don't have an account?",
+    signUp: lang === 'ko' ? '무료 회원가입' : lang === 'ja' ? '無料登録' : 'Sign up for free',
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#090D16] p-6 text-slate-100">
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-[#090D16] p-6 text-slate-100 font-sans">
+      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+        {/* Language selector in top right */}
+        <div className="flex justify-end mb-2">
+          <LanguageSelector />
+        </div>
+
         {/* Brand Header */}
         <div className="text-center mb-6">
           <Link href="/" className="inline-flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center bg-slate-800 border border-slate-700">
-              <img src="/icon.png" alt="SnapBot" className="w-6 h-6 object-contain" />
+            <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-slate-800 border border-slate-700">
+              <img src="/icon.png" alt="SnapBot" className="w-7 h-7 object-contain" />
             </div>
             <span className="font-extrabold text-lg text-white">SnapBot</span>
           </Link>
-          <h2 className="text-xl font-bold text-white">로그인</h2>
-          <p className="text-xs text-slate-400 mt-1">
-            SnapBot 계정으로 로그인하여 봇 프로젝트를 관리하세요.
-          </p>
+          <h2 className="text-xl font-bold text-white tracking-tight">{text.title}</h2>
+          <p className="text-xs text-slate-400 mt-1">{text.subtitle}</p>
         </div>
 
         {errorMsg && (
@@ -72,7 +120,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">이메일 주소</label>
+            <label className="block text-xs font-medium text-slate-300 mb-1.5">{text.emailLabel}</label>
             <div className="relative">
               <Mail className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
               <input
@@ -87,13 +135,13 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">비밀번호</label>
+            <label className="block text-xs font-medium text-slate-300 mb-1.5">{text.passwordLabel}</label>
             <div className="relative">
               <Lock className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
               <input
                 type="password"
                 required
-                placeholder="비밀번호"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-slate-950 text-slate-200 text-xs rounded-xl pl-9 pr-4 py-2.5 border border-slate-700/80 focus:border-indigo-500 focus:outline-none transition-colors"
@@ -104,9 +152,9 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.02] mt-2"
+            className="w-full flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all hover:scale-[1.01] mt-2"
           >
-            <span>{loading ? '로그인 중...' : '로그인'}</span>
+            <span>{loading ? text.submitting : text.submitBtn}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
 
@@ -116,14 +164,15 @@ export default function LoginPage() {
               <div className="w-full border-t border-slate-800" />
             </div>
             <div className="relative flex justify-center text-[11px] uppercase tracking-wider">
-              <span className="bg-slate-900 px-2 text-slate-500">또는</span>
+              <span className="bg-slate-900 px-2 text-slate-500">{text.or}</span>
             </div>
           </div>
 
           {/* Google OAuth Button */}
           <a
             href="/api/auth/google"
-            className="w-full flex items-center justify-center gap-2.5 py-2.5 bg-white hover:bg-slate-100 text-slate-900 rounded-xl text-xs font-bold transition-all shadow-md"
+            onClick={() => sounds.play('click')}
+            className="w-full flex items-center justify-center gap-2.5 py-2.5 bg-white hover:bg-slate-100 text-slate-900 rounded-xl text-xs font-bold transition-all shadow-md hover:scale-[1.01]"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path
@@ -143,14 +192,14 @@ export default function LoginPage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            <span>Google 계정으로 계속하기</span>
+            <span>{text.googleBtn}</span>
           </a>
         </form>
 
         <div className="mt-6 text-center text-xs text-slate-400">
-          아직 계정이 없으신가요?{' '}
+          {text.noAccount}{' '}
           <Link href="/register" className="text-indigo-400 hover:underline font-semibold">
-            무료 회원가입
+            {text.signUp}
           </Link>
         </div>
       </div>
@@ -158,3 +207,16 @@ export default function LoginPage() {
   );
 }
 
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#090D16] text-slate-400 text-xs">
+          Loading...
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
+  );
+}

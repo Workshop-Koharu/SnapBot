@@ -1,7 +1,13 @@
+// ==============================================================================
+// SnapBot Google OAuth Callback Handler
+// Integrates Resilient User Storage & 6-Digit OTP Verification
+// (c) 2026 Workshop-Koharu (MIT License)
+// ==============================================================================
+
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
 import { sendOtpVerificationEmail } from '@/lib/auth/email';
 import { setPendingRegistration } from '@/lib/auth/pending';
+import { upsertUser, recordVerification } from '@/lib/auth/user-store';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -21,7 +27,7 @@ export async function GET(req: NextRequest) {
   const redirectUri = `${origin}/api/auth/callback/google`;
 
   try {
-    // 1. Exchange code for access token
+    // 1. Exchange authorization code for Google access token
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -52,53 +58,21 @@ export async function GET(req: NextRequest) {
 
     const email = profile.email.toLowerCase().trim();
     const nickname = (profile.name || profile.given_name || email.split('@')[0]).trim();
-    const avatarUrl = profile.picture;
+    const avatarUrl = profile.picture || null;
 
-    // 3. Find or Create User in database (with emailVerified initially false until OTP confirmed)
-    let user = null;
-
-    try {
-      user = await prisma.user.findUnique({ where: { email } });
-      if (!user) {
-        user = await prisma.user.create({
-          data: {
-            email,
-            nickname,
-            avatarUrl,
-            provider: 'google',
-            providerId: profile.id,
-            emailVerified: false,
-          },
-        });
-      } else {
-        user = await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            avatarUrl: avatarUrl || user.avatarUrl,
-            providerId: profile.id,
-          },
-        });
-      }
-    } catch (dbErr) {
-      console.warn('[Google OAuth DB Warning]:', dbErr);
-    }
+    // 3. Persist Google User in resilient store
+    const user = await upsertUser({
+      email,
+      nickname,
+      avatarUrl,
+      provider: 'google',
+      providerId: profile.id,
+      emailVerified: false,
+    });
 
     // 4. Generate 6-digit numeric OTP code
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-    try {
-      await prisma.emailVerification.create({
-        data: {
-          email,
-          userId: user?.id,
-          code: otpCode,
-          expiresAt,
-        },
-      });
-    } catch (e) {
-      console.error('[Google OAuth EmailVerification DB Error]:', e);
-    }
+    await recordVerification(email, otpCode, user.id);
 
     // Cache pending nickname to guarantee it is preserved during OTP verification
     setPendingRegistration(email, nickname, 'google');
@@ -106,7 +80,7 @@ export async function GET(req: NextRequest) {
     // Send 6-digit OTP verification email via Resend
     await sendOtpVerificationEmail(email, otpCode, nickname);
 
-    // Redirect to OTP verification screen with email prefilled
+    // Redirect to dedicated OTP verification screen with email prefilled
     return NextResponse.redirect(`${origin}/verify-otp?email=${encodeURIComponent(email)}&provider=google`);
   } catch (err) {
     console.error('Google OAuth Callback Exception:', err);

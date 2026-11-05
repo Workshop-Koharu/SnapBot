@@ -40,6 +40,26 @@ class SoundManager {
     }
   }
 
+  public play(type: 'snap' | 'click' | 'delete' | 'message' | 'success') {
+    switch (type) {
+      case 'snap':
+        this.playSnap();
+        break;
+      case 'click':
+        this.playClick();
+        break;
+      case 'delete':
+        this.playDelete();
+        break;
+      case 'message':
+        this.playMessage();
+        break;
+      case 'success':
+        this.playSuccess();
+        break;
+    }
+  }
+
   /**
    * 1. Magnetic Block Snapping Click Sound (Crisp mechanical snap)
    */
